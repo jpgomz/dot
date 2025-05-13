@@ -1,0 +1,245 @@
+#!/bin/bash
+
+# Función para mostrar el mensaje de ayuda
+mostrar_ayuda() {
+    echo "Uso: ./dumpdb [opciones]"
+    echo "Opciones:"
+    echo "  -h, --help            Muestra este mensaje de ayuda y sale."
+    echo "  -v, --version         Muestra la versión del script."
+    echo "  -e, --env <ambiente>  Especifica el ambiente de entrada."
+    echo "  -o, --output <path>   Especifica el directorio de salida."
+    exit 0
+}
+
+# Función para mostrar la versión del script
+mostrar_version() {
+    echo "Versión 1.0"
+    exit 0
+}
+
+# Comprobar si se han pasado argumentos
+if [ $# -eq 0 ]; then
+    mostrar_ayuda
+fi
+
+# Procesar opciones
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            mostrar_ayuda
+            ;;
+        -v|--version)
+            mostrar_version
+            ;;
+        -e|--env)
+            env="$2"
+            shift 2
+            ;;
+        -o|--output)
+            out_path="$2"
+            shift 2
+            ;;
+        *)
+            echo "Opción no válida: $1"
+            mostrar_ayuda
+            ;;
+    esac
+done
+
+if [ "$env" == "dev" ]; then
+    user="compras"
+    pass="LpF2caPX*"
+    db="compras_dev"
+    env_db="comprasdev"
+    out_file="compras_dev.sql"
+    host="127.0.0.1"
+elif [ "$env" == "mant" ]; then
+    user="compras"
+    pass="LpF2caPX*"
+    db="compras_mant"
+    env_db="comprasdev"
+    out_file="compras_mant.sql"
+    host="127.0.0.1"
+elif [ "$env" == "prod" ]; then
+    user="comprasbys"
+    pass="m45ZzsScF"
+    db="compras"
+    env_db="comprasprod"
+    out_file="comprasbys.sql"
+    host="127.0.0.2"
+else
+    echo "El ambiente $env no esta implementado."
+    exit 1
+fi
+
+if [ -z "$out_path" ]; then
+    out_path="/var/tmp/agd-portalcompras-back/docker/init/"
+fi
+
+FECHA="$(date -d '6 months ago' +%Y-%m-%d)"
+
+# Función para establecer el túnel SSH en segundo plano
+establish_ssh_tunnel() {
+    # Establecer el túnel SSH en segundo plano
+    ssh -S ~/.ssh/sock -fNM $env_db
+}
+
+close_ssh_tunnel() {
+    # Si deseas finalizar el túnel SSH en algún punto, puedes hacerlo así
+    ssh -S ~/.ssh/sock -O exit $env_db
+}
+
+perform_pxs_backup() {
+    pxs_parts="pxs.sql"
+
+    QUERY="select min(id) from pxs where created_at >= '$FECHA';"
+    echo "Query $QUERY"
+    PX_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_ID $PX_ID"
+
+    echo "Haciendo dump de la tabla pxs con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db pxs \
+        --where="id >= '$PX_ID'" 2>/dev/null >> $pxs_parts
+ 
+    QUERY="select min(id) from px_company where px_id >= $PX_ID;"
+    echo "Query $QUERY"
+    PX_COMPANY_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_COMPANY_ID $PX_COMPANY_ID"
+
+    echo "Haciendo dump de la tabla px_company con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db px_company \
+        --where="id >= '$PX_COMPANY_ID'" 2>/dev/null >> $pxs_parts
+
+    QUERY="select min(id) from px_company_requote_comments where px_company_id >= $PX_COMPANY_ID;"
+    echo "Query $QUERY"
+    PX_COMPANY_REQUOTE_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_COMPANY_REQUOTE_ID $PX_COMPANY_REQUOTE_ID"
+
+    echo "Haciendo dump de la tabla px_company_requote_comments con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db px_company_requote_comments \
+        --where="id >= '$PX_COMPANY_REQUOTE_ID'" 2>/dev/null >> $pxs_parts
+
+    QUERY="select min(id) from px_oq where px_id >= $PX_ID;"
+    echo "Query $QUERY"
+    PX_OQ_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_OQ_ID $PX_OQ_ID"
+
+    echo "Haciendo dump de la tabla px_company con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db px_oq \
+        --where="id >= '$PX_OQ_ID'" 2>/dev/null >> $pxs_parts
+
+    QUERY="select min(id) from px_company_oq where px_company_id >= $PX_COMPANY_ID;"
+    echo "Query $QUERY"
+    PX_COMPANY_OQ_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_COMPANY_OQ_ID $PX_COMPANY_OQ_ID"
+
+    echo "Haciendo dump de la tabla px_company_oq con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db px_company_oq \
+        --where="id >= '$PX_COMPANY_OQ_ID'" 2>/dev/null >> $pxs_parts
+
+    QUERY="select min(id) from px_company_oq_lines where px_company_oq_id >= $PX_COMPANY_OQ_ID;"
+    echo "Query $QUERY"
+    PX_COMPANY_OQ_LINES_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_COMPANY_OQ_LINES_ID $PX_COMPANY_OQ_LINES_ID"
+
+    echo "Haciendo dump de la tabla px_company_oq_lines con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db px_company_oq_lines \
+        --where="id >= '$PX_COMPANY_OQ_LINES_ID'" 2>/dev/null >> $pxs_parts
+
+    QUERY="select min(id) from px_company_oq_lines_comments where px_company_oq_line_id >= $PX_COMPANY_OQ_LINES_ID;"
+    echo "Query $QUERY"
+    PX_COMPANY_OQ_LINES_COMMENT_ID=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "PX_COMPANY_OQ_LINES_COMMENT_ID $PX_COMPANY_OQ_LINES_COMMENT_ID"
+
+    echo "Haciendo dump de la tabla px_company_oq_lines_comments con datos filtrados"
+        mysqldump -u$user -p$pass -h "$host" \
+            --no-tablespaces --default-character-set=utf8mb4 $db px_company_oq_lines_comments \
+        --where="id >= '$PX_COMPANY_OQ_LINES_COMMENT_ID'" 2>/dev/null >> $pxs_parts
+}
+
+# Función para realizar el respaldo de la base de datos
+perform_database_backup() {
+    proc="procedure.sql"
+    header="header.sql"
+    parts="parts.sql"
+    
+    echo "CREATE DATABASE IF NOT EXISTS $db;" > $header
+    echo "USE $db;" >> $header
+
+    NODATA_TABLES=(comparatives notifications failed_jobs)
+    FILTERED_TABLES=(oq_lines oqs filings attachments audits doc_memory \
+	     prov_contacts history_oqs currencies_history)
+    IGNORED_TABLES=("${NODATA_TABLES[@]}" "${FILTERED_TABLES[@]}")
+
+    # Iterar sobre cada tabla y hacer el dump
+    for table in ${NODATA_TABLES[@]}; do
+        echo "Haciendo dump de la tabla $table sin datos"
+    	mysqldump -u$user -p$pass -h "$host" --no-data \
+      	    --no-tablespaces  --default-character-set=utf8mb4 $db $table \
+	    2>/dev/null >> $parts
+    done
+
+    # Iterar sobre cada tabla y hacer el dump
+    for table in ${FILTERED_TABLES[@]}; do
+        echo "Haciendo dump de la tabla $table con datos filtrados"
+    	mysqldump -u$user -p$pass -h "$host" \
+      	    --no-tablespaces --default-character-set=utf8mb4 $db $table \
+	    --where="updated_at >= '$FECHA'" 2>/dev/null >> $parts
+    done
+
+    IGNORED_TABLES_STRING=''
+    for table in "${IGNORED_TABLES[@]}"
+    do :
+       IGNORED_TABLES_STRING+=" --ignore-table=${db}.${table}"
+    done
+
+    echo "Haciendo dump de deliveries_acceptance"
+    QUERY="select min(id_proceso) from web_hooks where updated_at >= '$FECHA' and id_proceso > 0;"
+    echo "Query $QUERY"
+    ID_PROCESO=$(mysql -h "$host" -u "$user" -p"$pass" -D "$db" -se "$QUERY" 2>/dev/null)
+    echo "ID_PROCESO $ID_PROCESO"
+    mysqldump -u$user -p$pass -h $host --no-tablespaces $db deliveries_acceptance \
+            --where="id_proceso >= '$ID_PROCESO'" 2>/dev/null >> $parts
+
+    echo "Haciendo dump de las tablas restatntes"
+    mysqldump -u$user -p$pass -h "$host" \
+      	--no-tablespaces --default-character-set=utf8mb4 $db \
+	${IGNORED_TABLES_STRING} 2>/dev/null >> $parts
+    
+    perform_pxs_backup
+
+    cat $header $pxs_parts $parts $proc > $out_file
+    # cat $header $pxs_parts $parts > $out_file
+    rm $header $pxs_parts $parts
+}
+
+# Llamar a la función para establecer el túnel SSH
+establish_ssh_tunnel
+
+# Aquí puedes poner el resto de tu script principal
+echo "Túnel SSH establecido."
+
+# Ejecutar la función para realizar el respaldo de la base de datos
+echo "Iniciando dump de base de datos."
+perform_database_backup
+echo "Dump completado. Archivo guardado en $out_file"
+
+echo "Reemplazando nombre de base de datos."
+sed -i 's/compras_mant\|compras_dev/compras/g' $out_file
+echo "Completado."
+
+echo "Moviendo la base de datos."
+mv $out_file $out_path
+echo "Completado."
+
+echo "Cerrando el tunnel."
+close_ssh_tunnel
+
+echo "Script principal terminado."
+exit 0

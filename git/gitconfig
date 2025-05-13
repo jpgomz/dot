@@ -1,0 +1,15 @@
+[alias]
+	cob = checkout -b
+	ci = commit
+	co = checkout
+	st = status
+	logline = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+[core]
+	editor = vim
+[credential]
+	helper = store
+[user]
+	email = juanpblgomez@gmail.com
+	name = Juan P. Gomez
+[init]
+	defaultBranch = main

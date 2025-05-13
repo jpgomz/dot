@@ -1,0 +1,5 @@
+#!/bin/bash
+clone docker/docker-install
+./install.sh
+./rootless-install.sh
+./verify-docker-install

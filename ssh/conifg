@@ -1,0 +1,77 @@
+# Personal account
+Host github-personal
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519PK
+
+# Work account
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+
+Host cp
+  HostName 34.151.207.197
+  User juan
+
+Host worker
+  HostName 34.95.250.161
+  User juan
+
+Host famaf
+  HostName mail.famaf.unc.edu.ar
+  User jgomez3
+
+Host pdfact
+  HostName 172.30.0.29
+  User santex
+  #ProxyJump comprasdev
+  ProxyCommand ssh santex@comprasdev nc %h %p
+  # RabbitMQ AWS https://localhost:8083
+  LocalForward 8083 172.31.60.137:443
+
+Host db171
+  HostName 172.30.0.29
+  User santex
+  ProxyCommand ssh santex@comprasdev nc %h %p
+  LocalForward 3306 172.30.0.171:3306
+
+Host db170
+  HostName 172.30.0.137
+  User santex
+  ProxyCommand ssh santex@comprasdev nc %h %p
+  LocalForward 3306 172.30.0.170:3306
+
+Host comprasdev
+  HostName 172.30.0.131
+  User santex
+  LocalForward 3306 172.30.0.171:3306
+  LocalForward 8443 serviciostest.agdcorp.com.ar:8443
+  LocalForward 172.17.0.1:8443 serviciostest.agdcorp.com.ar:8443
+
+Host comprasprod
+  HostName 172.30.0.137
+  User santex
+  ProxyJump comprasdev 
+  # LocalForward 172.17.0.1:5673 172.30.0.137:5672
+  LocalForward 127.0.0.2:3306 172.30.0.170:3306
+
+  # ProxyCommand ssh santex@comprasdev nc %h %p
+  # LocalForward 15673 172.30.0.137:15672
+
+Host iplan4
+  HostName 172.30.10.4
+  User santex
+  ProxyJump comprasdev
+  # ProxyCommand ssh santex@comprasdev nc %h %p
+
+Host iplan3
+  #HostName 172.30.10.3
+  HostName 172.30.10.8
+  User santex
+  ProxyJump comprasprod
+  # ProxyCommand ssh santex@comprasprod nc %h %p
+
+Host *
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/id_rsa

@@ -1,4 +1,8 @@
 #!/bin/sh
+if [[ ! $(type tmux) ]]; then
+	echo "TMUX isn't installed. Skipping."
+	exit 1
+fi
 
 echo "Replacing ~/.tmux.conf with symlink/copy."
 ln -sf "$PWD/tmux.conf" ~/.tmux.conf

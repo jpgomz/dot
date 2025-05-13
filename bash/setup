@@ -3,6 +3,12 @@
 echo "Replacing ~/.bashrc with symlink/copy."
 ln -sf "$PWD/bashrc" ~/.bashrc
 
+echo "Replacing ~/.bash_aliases with symlink/copy."
+ln -sf "$PWD/bash_aliases" ~/.bash_aliases
+
+echo "Replacing ~/.bash_functions with symlink/copy."
+ln -sf "$PWD/bash_functions" ~/.bash_functions|
+
 echo "Replacing ~/.inputrc with symlink/copy."
 ln -sf "$PWD/inputrc" ~/.inputrc
 

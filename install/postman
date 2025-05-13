@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+
+INSTALL_DIR="/opt/postman"
+BIN_LINK="/usr/local/bin/postman"
+DESKTOP_DIR="$HOME/.local/share/applications"
+DESKTOP_FILE="$DESKTOP_DIR/postman.desktop"
+
+# Eliminar versiones anteriores si existen
+sudo rm -rf "$INSTALL_DIR"
+sudo rm -f "$BIN_LINK"
+
+# Descargar la última versión de Postman (desde su CDN oficial)
+echo "Descargando Postman..."
+wget https://dl.pstmn.io/download/latest/linux64 -O postman.tar.gz
+sudo tar -xzf postman.tar.gz -C /opt
+sudo mv /opt/Postman "$INSTALL_DIR"
+rm postman.tar.gz
+
+echo "Creando acceso directo..."
+sudo ln -s "$INSTALL_DIR/Postman" "$BIN_LINK"
+
+echo "Creando acceso directo en el menú de aplicaciones..."
+cat <<EOF > "$DESKTOP_FILE"
+[Desktop Entry]
+Name=Postman
+Exec=$BIN_LINK
+Icon=$INSTALL_DIR/app/resources/app/assets/icon.png
+Type=Application
+Categories=Development;
+Terminal=false
+EOF

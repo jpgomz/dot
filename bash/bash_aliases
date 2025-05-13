@@ -1,0 +1,292 @@
+# ~~~~~~~~~~~~~~~ Aliases ~~~~~~~~~~~~~~~~~~~~~~~~
+
+# servers
+alias dev='ssh comprasdev'
+alias prod='ssh comprasprod'
+alias famaf='ssh famaf'
+alias iplan4='ssh iplan4'
+alias iplan3='ssh iplan3'
+alias pdfact='ssh pdfact'
+alias public='curl -w "\n" ifconfig.me'
+
+# Control cd command behavior
+## a quick way to get out of current directory ##
+alias ..='cd ..'
+alias ...='cd ../../../'
+alias ....='cd ../../../../'
+alias .....='cd ../../../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../..'
+
+alias h1='history 10'
+alias h2='history 20'
+alias h3='history 30'
+
+alias cdb='cd $REPOS/agd-portalcompras-back'
+alias cdf='cd $REPOS/agd-portalcompras-front'
+alias cdd='cdb && cd docker'
+# alias gh='cd ~'
+alias dbd='cdd && docker compose exec comprasdb /usr/bin/mysqldump -uroot -proot --add-drop-database --default-character-set=utf8mb4 --databases compras | gzip > ~/Documents/backup/compras_mant.gz'
+alias dbdnd='cdd && docker compose exec comprasdb /usr/bin/mysqldump -uroot -proot --no-data agd_proveedores_main > ~/Documents/backup/no-data.sql' 
+alias mdump='docker compose exec comprasdb /usr/bin/mysqldump'
+alias mcli='docker compose exec comprasdb mysql -u root -proot compras'
+alias mimp='cdd && docker compose exec -T comprasdb mysql -u root -proot'
+alias tdb='cdd && docker compose exec comprasdb tail -f /var/lib/mysql/logs/general.log'
+#alias vo='cd $REPOS/github.com/VanOord/'
+#alias scripts='cd $SCRIPTS'
+#alias cdblog="cd ~/websites/blog"
+#alias cdpblog='cd $SECOND_BRAIN/2-areas/blog/content'
+#alias lab='cd $LAB'
+#alias cks='cd $LAB/kubernetes/cks/'
+#alias alab='cd $GHREPOS/azure-lab'
+#alias dot='cd $GHREPOS/dotfiles'
+#alias zk='cd $GHREPOS/zettelkasten'
+#alias repos='cd $REPOS'
+#alias cdgo='cd $GHREPOS/go/'
+#alias ex='cd $REPOS/github.com/mischavandenburg/go/Exercism/'
+#alias rwdot='cd $REPOS/github.com/rwxrob/dot'
+alias c="clear"
+#alias icloud="cd \$ICLOUD"
+#alias rob='cd $REPOS/github.com/rwxrob'
+#alias homelab='cd $REPOS/github.com/mischavandenburg/homelab/'
+#alias hl='homelab'
+#alias hlp='cd $REPOS/github.com/mischavandenburg/homelab-private/'
+#alias hlps='cd $REPOS/github.com/mischavandenburg/homelab-private-staging/'
+#alias hlpp='cd $REPOS/github.com/mischavandenburg/homelab-private-production/'
+#alias skool='cd $REPOS/github.com/mischavandenburg/skool/kubernetes-fundamentals'
+#alias cdq='cd $REPOS/github.com/jackyzha0/quartz'
+
+# apt 
+alias install='sudo apt install'
+# update on one command
+alias update='sudo apt update && sudo apt upgrade'
+
+# Control ls command output
+alias ls='ls --color=auto'
+alias ll='ls -la'
+# alias la='exa -laghm@ --all --icons --git --color=always'
+alias la='ls -lathr'
+## Show hidden files ##
+alias l.='ls -d .* --color=auto'
+
+#3: Control grep command output
+## Colorize the grep command output for ease of use (good for log files)##
+alias grep='grep --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+
+#4: Start calculator with math support
+alias bc='bc -l'
+
+#4: Generate sha1 digest
+alias sha1='openssl sha1'
+
+#5: Create parent directories on demand
+alias mkdir='mkdir -pv'
+
+#6: Colorize diff output
+# install  colordiff package :)
+alias diff='colordiff'
+
+#7: Make mount command output pretty and human readable format
+alias mount='mount |column -t'
+
+#8: Command short cuts to save time
+# handy short cuts #
+alias h='history'
+alias j='jobs -l'
+
+#9: Create a new set of commands
+alias path='echo -e ${PATH//:/\\n}'
+alias now='date +"%T"'
+alias nowtime=now
+alias nowdate='date +"%d-%m-%Y"'
+
+#10: Set vim as default
+alias v=nvim
+alias vi=nvim
+alias svi='sudo nvim'
+alias vis='nvim "+set si"'
+alias edit='nvim'
+
+#11: Control output of networking tool called ping
+# Stop after sending count ECHO_REQUEST packets #
+alias ping='ping -c 5'
+# Do not wait interval 1 second, go fast #
+alias fastping='ping -c 100 -i .2'
+alias eip='curl icanhazip.com'
+# How to check open ports
+alias op='sudo lsof -nP -iTCP -sTCP:LISTEN'
+
+#12: Show open ports
+# install net-tools package
+alias ports='netstat -tulanp'
+
+#13: Wakeup sleeping servers
+## replace mac with your actual server mac address #
+alias wakeupnas01='/usr/bin/wakeonlan 00:11:32:11:15:FC'
+alias wakeupnas02='/usr/bin/wakeonlan 00:11:32:11:15:FD'
+alias wakeupnas03='/usr/bin/wakeonlan 00:11:32:11:15:FE'
+
+#19: Tune sudo and su
+# become root #
+alias root='sudo -i'
+alias su='sudo -i'
+
+#21: Control web servers
+# also pass it via sudo so whoever is admin can reload it without calling you #
+alias nginxreload='sudo /usr/local/nginx/sbin/nginx -s reload'
+alias nginxtest='sudo /usr/local/nginx/sbin/nginx -t'
+alias lightyload='sudo /etc/init.d/lighttpd reload'
+alias lightytest='sudo /usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -t'
+alias httpdreload='sudo /usr/sbin/apachectl -k graceful'
+alias httpdtest='sudo /usr/sbin/apachectl -t && /usr/sbin/apachectl -t -D DUMP_VHOSTS'
+
+#22: Alias into our backup stuff
+# if cron fails or if you want backup on demand just run these commands #
+# again pass it via sudo so whoever is in admin group can start the job #
+# Backup scripts #
+alias backup='sudo /home/scripts/admin/scripts/backup/wrapper.backup.sh --type local --taget /raid1/backups'
+alias nasbackup='sudo /home/scripts/admin/scripts/backup/wrapper.backup.sh --type nas --target nas01'
+alias s3backup='sudo /home/scripts/admin/scripts/backup/wrapper.backup.sh --type nas --target nas01 --auth /home/scripts/admin/.authdata/amazon.keys'
+alias rsnapshothourly='sudo /home/scripts/admin/scripts/backup/wrapper.rsnapshot.sh --type remote --target nas03 --auth /home/scripts/admin/.authdata/ssh.keys --config /home/scripts/admin/scripts/backup/config/adsl.conf'
+alias rsnapshotdaily='sudo  /home/scripts/admin/scripts/backup/wrapper.rsnapshot.sh --type remote --target nas03 --auth /home/scripts/admin/.authdata/ssh.keys  --config /home/scripts/admin/scripts/backup/config/adsl.conf'
+alias rsnapshotweekly='sudo /home/scripts/admin/scripts/backup/wrapper.rsnapshot.sh --type remote --target nas03 --auth /home/scripts/admin/.authdata/ssh.keys  --config /home/scripts/admin/scripts/backup/config/adsl.conf'
+alias rsnapshotmonthly='sudo /home/scripts/admin/scripts/backup/wrapper.rsnapshot.sh --type remote --target nas03 --auth /home/scripts/admin/.authdata/ssh.keys  --config /home/scripts/admin/scripts/backup/config/adsl.conf'
+alias amazonbackup=s3backup
+
+#24: Set default interfaces for sys admin related commands
+## All of our servers eth1 is connected to the Internets via vlan / router etc  ##
+alias dnstop='dnstop -l 5  eth1'
+alias vnstat='vnstat -i eth1'
+alias iftop='iftop -i eth1'
+alias tcpdump='tcpdump -i eth1'
+alias ethtool='ethtool eth1'
+ 
+# work on wlan0 by default #
+# Only useful for laptop as all servers are without wireless interface
+alias iwconfig='iwconfig wlan0'
+
+#25: Get system memory, cpu usage, and gpu memory info quickly
+## pass options to free ##
+alias meminfo='free -m -l -t'
+ 
+## get top process eating memory
+alias psmem='ps auxf | sort -nr -k 4'
+alias psmem10='ps auxf | sort -nr -k 4 | head -10'
+ 
+## get top process eating cpu ##
+alias pscpu='ps auxf | sort -nr -k 3'
+alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
+ 
+## Get server cpu info ##
+alias cpuinfo='lscpu'
+ 
+## older system use /proc/cpuinfo ##
+##alias cpuinfo='less /proc/cpuinfo' ##
+ 
+## get GPU ram on desktop / laptop##
+alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
+
+#27 Resume wget by default
+## this one saved by butt so many times ##
+alias wget='wget -c'
+
+## set some other defaults ##
+alias df='df -H'
+alias du='du -ch'
+# get top dirs eating space
+# sudo du -h --max-depth=1 /var/lib/jenkins/workspace/ | sort -hr | head -n 10
+
+
+# finds all files recursively and sorts by last modification, ignore hidden files
+alias last='find . -type f -not -path "*/\.*" -exec ls -lrt {} +'
+
+alias sv='sudoedit'
+alias t='tmux'
+#alias e='exit'
+#alias syu='sudo pacman -Syu'
+
+# git
+alias gp='git pull'
+alias gc='git clone'
+alias gl='git log --oneline'
+alias glog='git logline'
+alias gs='git status'
+alias gci='git commit'
+alias grc='git co RC_MANTENIMIENTO'
+alias gall='git add -A'
+alias gcp='git cherry-pick'
+alias lg='lazygit'
+alias current_branch="git rev-parse --abbrev-ref HEAD"
+alias pull='git pull origin $(current_branch)'
+alias push='git push --set-upstream origin $(current_branch)'
+
+
+# ricing
+alias et='v ~/.config/awesome/themes/powerarrow/theme-personal.lua'
+alias ett='v ~/.config/awesome/themes/powerarrow-dark/theme-personal.lua'
+alias er='v ~/.config/awesome/rc.lua'
+alias eb='v ~/.bashrc'
+alias ev='cd ~/.config/nvim/ && v init.lua'
+alias sbr='source ~/.docker compose exec nvim grep -E "^(ID|NAME)=" /etc/os-release | grep -q "alpine"bashrc'
+alias sb='source ~/.bashrc'
+alias ea='v ~/.alias'
+
+# docker
+alias dcu='cdd && docker compose up'
+alias dcd='cdd && docker compose down'
+alias dem='cdd && docker compose exec comprasdb mysql -uroot -proot compras'
+alias demo='cdd && docker compose exec comprasmongo bash'
+alias dep='cdd && docker compose exec comprasphp bash'
+alias den='cdd && docker compose exec comprasnginx bash'
+alias dcp='cdd && docker compose cp'
+
+# vim & second brain
+#alias sb="cd \$SECOND_BRAIN"
+alias in="cd \$SECOND_BRAIN/0 Inbox/"
+alias vbn='python ~/git/python/brainfile.py'
+
+# starting programmes
+#alias cards='python3 /opt/homebrew/lib/python3.11/site-packages/mtg_proxy_printer/'
+
+# terraform
+#alias tf='terraform'
+#alias tp='terraform plan'
+
+# fun
+#alias fishies=asciiquarium
+
+# kubectl
+# alias k='kubectl'
+# source <(kubectl completion bash)
+# complete -o default -F __start_kubectl k
+# alias kgp='kubectl get pods'
+# alias kc='kubectx'
+# alias kn='kubens'
+
+#alias kcs='kubectl config use-context admin@homelab-staging'
+#alias kcp='kubectl config use-context admin@homelab-production'
+
+# flux
+# source <(flux completion bash)
+# alias fgk='flux get kustomizations'
+
+# talos
+# source <(talosctl completion bash)
+
+# EDB
+# source <(kubectl-cnp completion bash)
+
+# cilium
+# source <(cilium completion bash)
+
+# fzf aliases
+# use fp to do a fzf search and preview the files
+alias fp="fzf --preview 'bat --style=numbers --color=always --line-range :500 {}'"
+# search for a file with fzf and open it in vim
+alias vf='v $(fp)'
+
+alias chromedebug='google-chrome --remote-debugging-port=9222'
+alias validate-braces='validate_braces'
+

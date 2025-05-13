@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# ====================================
+# CONFIGURACIÓN
+# ====================================
+BACKUP_DIR="$DOTFILES/keys"
+ENCRYPTION_METHOD="gpg"  # opciones: gpg, openssl, age
+
+# Archivos SSH que quieres respaldar
+SSH_KEYS=(
+  "$HOME/.ssh/id_ed25519"
+  "$HOME/.ssh/id_ed25519PK"
+)
+
+# Archivo donde se exportarán las claves GPG
+GPG_EXPORT_RAW="$BACKUP_DIR/gpg-keys.asc"
+
+# ====================================
+# FUNCIONES DE CIFRADO
+# ====================================
+
+encrypt_file_gpg() {
+  local file="$1"
+  local out_file="$BACKUP_DIR/$(basename "$file").gpg"
+  gpg --symmetric --cipher-algo AES256 --output "$out_file" "$file"
+}
+
+encrypt_file_openssl() {
+  local file="$1"
+  local out_file="$BACKUP_DIR/$(basename "$file").enc"
+  openssl enc -aes-256-cbc -salt -in "$file" -out "$out_file"
+}
+
+encrypt_file_age() {
+  local file="$1"
+  local out_file="$BACKUP_DIR/$(basename "$file").age"
+  age -p -o "$out_file" "$file"
+}
+
+process_file() {
+  local file="$1"
+  echo "[*] Cifrando: $file"
+
+  case $ENCRYPTION_METHOD in
+    gpg) encrypt_file_gpg "$file" ;;
+    openssl) encrypt_file_openssl "$file" ;;
+    age) encrypt_file_age "$file" ;;
+    *) echo "[!] Método de cifrado no válido"; exit 1 ;;
+  esac
+}
+
+# ====================================
+# INICIO DEL SCRIPT
+# ====================================
+mkdir -p "$BACKUP_DIR"
+
+# Respaldo de claves SSH
+for file in "${SSH_KEYS[@]}"; do
+  [[ -f "$file" ]] && process_file "$file"
+done
+
+# Exportar claves GPG secretas y cifrar el archivo
+if gpg --list-secret-keys | grep -q sec; then
+  echo "[*] Exportando claves GPG a: $GPG_EXPORT_RAW"
+  gpg --export-secret-keys --armor > "$GPG_EXPORT_RAW"
+  process_file "$GPG_EXPORT_RAW"
+  rm -f "$GPG_EXPORT_RAW"
+else
+  echo "[!] No se encontraron claves GPG secretas para exportar."
+fi
+
+echo "Copias cifradas guardadas en: $BACKUP_DIR"

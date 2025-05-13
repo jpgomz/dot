@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "Replacing ~/.config/Code/User/settings.json with symlink/copy."
+mkdir -p "$HOME/.config/Code/User"
+ln -sf "$PWD/settings.json" "$HOME/.config/Code/User/settings.json"
+
+echo "Replacing ~/.config/Code/User/keybindings.json with symlink/copy."
+mkdir -p "$HOME/.config/Code/User"
+ln -sf "$PWD/keybindings.json" "$HOME/.config/Code/User/keybindings.json"
+
+echo "Replacing ~/.config/Code/User/extensions.txt with symlink/copy."
+mkdir -p "$HOME/.config/Code/User"
+ln -sf "$PWD/extensions.txt" "$HOME/.config/Code/User/extensions.txt"

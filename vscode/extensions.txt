@@ -1,0 +1,7 @@
+alefragnani.bookmarks
+bmewburn.vscode-intelephense-client
+eamodio.gitlens
+ecmel.vscode-html-css
+golang.go
+vscodevim.vim
+xdebug.php-debug

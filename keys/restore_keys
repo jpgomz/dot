@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# ====================================
+# CONFIGURACIÓN
+# ====================================
+BACKUP_DIR="$DOTFILES/keys"
+METHOD="gpg"  # opciones: gpg, openssl, age
+SSH_DIR="$HOME/.ssh"
+GPG_RESTORED_ASC="$BACKUP_DIR/gpg-keys.asc"
+
+# ====================================
+# FUNCIONES DE DESCIFRADO
+# ====================================
+
+restore_gpg_file() {
+  local src="$1"
+  local dest="$2"
+  gpg --decrypt "$src" > "$dest"
+  chmod 600 "$dest"
+  echo "[✔] Restaurado: $dest"
+}
+
+restore_openssl_file() {
+  local src="$1"
+  local dest="$2"
+  openssl enc -d -aes-256-cbc -in "$src" -out "$dest"
+  chmod 600 "$dest"
+  echo "[✔] Restaurado: $dest"
+}
+
+restore_age_file() {
+  local src="$1"
+  local dest="$2"
+  age -d "$src" > "$dest"
+  chmod 600 "$dest"
+  echo "[✔] Restaurado: $dest"
+}
+
+restore_file() {
+  local encrypted="$1"
+  local filename=$(basename "$encrypted")
+  local dest
+
+  if [[ "$filename" == id_ed25519*.* || "$filename" == id_ed25519PK*.* ]]; then
+    dest="$SSH_DIR/${filename%.*}"
+  elif [[ "$filename" == gpg-keys.asc.* ]]; then
+    dest="$GPG_RESTORED_ASC"
+  else
+    echo "[!] Archivo desconocido: $encrypted"
+    return
+  fi
+
+  mkdir -p "$(dirname "$dest")"
+
+  case $METHOD in
+    gpg) restore_gpg_file "$encrypted" "$dest" ;;
+    openssl) restore_openssl_file "$encrypted" "$dest" ;;
+    age) restore_age_file "$encrypted" "$dest" ;;
+    *) echo "[!] Método inválido"; exit 1 ;;
+  esac
+
+  # Regenerar clave pública si es SSH
+  if [[ "$dest" == "$SSH_DIR/"id_ed25519* ]]; then
+    local pub_file="$dest.pub"
+    if [ ! -f "$pub_file" ]; then
+      echo "[*] Generando clave pública para: $dest"
+      ssh-keygen -y -f "$dest" > "$pub_file" && chmod 644 "$pub_file"
+      echo "[✔] Clave pública generada: $pub_file"
+    fi
+  fi
+}
+
+# ====================================
+# INICIO
+# ====================================
+echo "[*] Restaurando claves desde: $BACKUP_DIR usando método $METHOD"
+mkdir -p "$SSH_DIR"
+
+find "$BACKUP_DIR" -type f \( -name '*.gpg' -o -name '*.enc' -o -name '*.age' \) | while read -r file; do
+  restore_file "$file"
+done
+
+chmod 700 "$SSH_DIR"
+
+# ====================================
+# Importar claves GPG si no existen
+# ====================================
+if ! gpg --list-secret-keys | grep -q sec; then
+  if [ -f "$GPG_RESTORED_ASC" ]; then
+    echo "[*] Importando claves GPG desde: $GPG_RESTORED_ASC"
+    gpg --import "$GPG_RESTORED_ASC"
+    echo "[✔] Claves GPG importadas correctamente"
+  else
+    echo "[!] No hay claves GPG y no se encontró: $GPG_RESTORED_ASC"
+    echo "    Exporta tus claves con:"
+    echo "    gpg --export-secret-keys --armor > gpg-keys.asc"
+  fi
+else
+  echo "[*] Claves GPG ya presentes en el sistema"
+fi
+
+
+echo "[✔] Restauración completa."

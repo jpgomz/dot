@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Replacing ~/.gitconfig with symlink/copy."
+ln -sf "$PWD/gitconfig" ~/.gitconfig

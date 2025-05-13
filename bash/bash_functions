@@ -1,0 +1,146 @@
+# ~~~~~~~~~~~~~~~ Functions ~~~~~~~~~~~~~~~~~~~~~~~~
+mkdircd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
+
+# timestamp to date
+dtime() { echo $(date +"%Y-%m-%d" -d "@$1"); }
+# date to timestamp
+# Ex: totime 20240406:000102
+totime() { date -d "${1:0:8} ${1:9:2}:${1:11:2}:${1:13:2}" +"%s"; }
+
+
+function vpn-up() {
+  if [[ -z $COMPANY_VPN_HOST ]]
+  then
+    echo "Please set COMPANY_VPN_HOST env var"
+    return
+  fi
+  if [[ "$1" == "split" ]]
+  then
+    echo "Starting the vpn with split tunneling ..."
+    echo $VPN_PASS | sudo openconnect --background \
+      --script='/home/juan/vpn-slice-addresses' \
+      --user=$VPN_USER \
+      --authgroup=VPN  \
+      --protocol=anyconnect \
+      --useragent=AnyConnect \
+      --passwd-on-stdin \
+      $COMPANY_VPN_HOST
+  else
+    echo "Starting the vpn ..."
+    echo $VPN_PASS | sudo openconnect --background \
+      --user=$VPN_USER \
+      --authgroup=VPN  \
+      --protocol=anyconnect \
+      --useragent=AnyConnect \
+      --passwd-on-stdin \
+      $COMPANY_VPN_HOST
+  fi
+}
+
+function vpn-split() {
+  vpn-up split
+}
+
+function vpn-down() {
+  sudo kill -2 `pgrep openconnect`
+}
+
+function pkill() {
+  ps aux | fzf --height 40% --layout=reverse --prompt="Select process to kill: " --exact | awk '{print $2}' | xargs -r sudo kill
+}
+
+function logg() {
+    git log --oneline | fzf --ansi --no-sort \
+        --preview 'echo {} | grep -o "[a-f0-9]\{7\}" | head -1 | xargs -I % git show % --color=always' \
+        --preview-window=right:50%:wrap --height 100% \
+        --bind 'enter:execute(echo {} | grep -o "[a-f0-9]\{7\}" | head -1 | xargs -I % sh -c "git show % | nvim -c \"setlocal buftype=nofile bufhidden=wipe noswapfile nowrap\" -c \"nnoremap <buffer> q :q!<CR>\" -")' \
+        --bind 'ctrl-e:execute(echo {} | grep -o "[a-f0-9]\{7\}" | head -1 | xargs -I % sh -c "gh browse %")'
+}
+
+function yt-cut(){
+  yt-dlp -f mp4 "$1" --download-sections "*$2-$3" --remux-video mp4;
+};
+
+function git-report() {
+  cdd
+  branches=("dev" "mant" "master")
+
+  for branch in "${branches[@]}"; do
+    echo "Commits para la rama: $branch"
+    git log "$branch" --since="1 week ago" --pretty=format:"%h %an %ar: %s" --grep="Merge pull request" --invert-grep
+    echo "---------------------------------"
+  done
+
+  echo "Pull Requests abiertos:"
+  gh pr list --state open --assignee @me | grep -vi "snyk"
+}
+
+# Función para validar la paridad de llaves
+validate_braces() {
+    if [[ ! -f "$1" ]]; then
+        echo "Error: El archivo '$1' no existe."
+        return 1
+    fi
+
+    open_braces=$(grep -o "{" "$1" | wc -l)
+    close_braces=$(grep -o "}" "$1" | wc -l)
+
+    if [[ $open_braces -eq $close_braces ]]; then
+        echo "Llaves balanceadas: {=$open_braces, }=$close_braces"
+        return 0
+    else
+        echo "Error: Llaves desbalanceadas. {=$open_braces, }=$close_braces"
+        return 1
+    fi
+}
+
+# Funcion para recortar pdfs
+pdfcat() { 
+  pdftk $1 cat $2-$3 output newPdf.pdf
+}
+
+nvims() {
+  items=("default" "LazyVim" "LazyMisha")
+  config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " \
+      --height=50% \
+      --layout=reverse \
+      --border \
+      --margin=5%,49%,49%,0% \
+      --exit-0)
+  if [[ -z $config ]]; then
+    echo "Nothing selected"
+    return 0
+  elif [[ $config == "LazyMisha" ]]; then
+    # load scripts to path
+    PATH=$PATH:~/scripts
+    # load external alias
+    source ~/.alias
+  elif [[ $config == "default" ]]; then
+    config=""
+  fi
+  NVIM_APPNAME=$config nvim $@
+}
+
+bind -x '"\C-n\m": nvims'
+bind -x '"\C-n\s": echo Shortcut activated'
+
+clone() {
+	local repo="$1" user
+	local repo="${repo#https://github.com/}"
+	local repo="${repo#git@github.com:}"
+	if [[ $repo =~ / ]]; then
+		user="${repo%%/*}"
+	else
+		user="$GITUSER"
+		[[ -z "$user" ]] && user="$USER"
+	fi
+	local name="${repo##*/}"
+	local userd="$REPOS/github.com/$user"
+	local path="$userd/$name"
+	[[ -d "$path" ]] && cd "$path" && return
+	mkdir -p "$userd"
+	cd "$userd"
+	echo gh repo clone "$user/$name" -- --recurse-submodule
+	gh repo clone "$user/$name" -- --recurse-submodule
+	cd "$name"
+} && export -f clone

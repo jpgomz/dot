@@ -1,0 +1,5 @@
+#!/bin/bash
+
+wget -O slack.deb "https://downloads.slack-edge.com/releases/linux/latest/prod/x64/slack-desktop-latest-amd64.deb"
+sudo apt install -y ./slack.deb
+slack --version
