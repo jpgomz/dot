@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [[ ! $(type tmux) ]]; then
 	echo "TMUX isn't installed. Skipping."
 	exit 1
