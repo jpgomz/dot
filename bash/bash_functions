@@ -10,11 +10,9 @@ totime() { date -d "${1:0:8} ${1:9:2}:${1:11:2}:${1:13:2}" +"%s"; }
 
 
 function vpn-up() {
-  if [[ -z $COMPANY_VPN_HOST ]]
-  then
-    echo "Please set COMPANY_VPN_HOST env var"
-    return
-  fi
+  COMPANY_VPN_HOST=vpn.agd.com.ar
+  VPN_USER=JGomez
+  VPN_PASS=$(pass show agd/vpn)
   if [[ "$1" == "split" ]]
   then
     echo "Starting the vpn with split tunneling ..."
