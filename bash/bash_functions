@@ -1,5 +1,6 @@
 # ~~~~~~~~~~~~~~~ Functions ~~~~~~~~~~~~~~~~~~~~~~~~
 mkdircd() { mkdir -p "$@" && eval cd "\"\$$#\""; }
+mkcd() { mkdir -p "$1" && cd "$1"; }
 
 # timestamp to date
 dtime() { echo $(date +"%Y-%m-%d" -d "@$1"); }
