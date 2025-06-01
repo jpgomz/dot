@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Verifica que estamos en GNOME
+if [[ "$XDG_CURRENT_DESKTOP" != *"GNOME"* ]]; then
+  echo "❌ Este script sólo funciona en entornos GNOME. Entorno detectado: '$XDG_CURRENT_DESKTOP'"
+  exit 1
+fi
+
+# Atajo a asignar
+SHORTCUT_NAME="touchpad-toggle"
+KEY_COMBINATION="<Super>t"
+
+# Aplica el atajo usando gsettings
+gsettings set org.gnome.settings-daemon.plugins.media-keys "$SHORTCUT_NAME" "['$KEY_COMBINATION']"
+
+# Verifica si se aplicó correctamente
+CURRENT_KEYS=$(gsettings get org.gnome.settings-daemon.plugins.media-keys "$SHORTCUT_NAME")
+if [[ "$CURRENT_KEYS" == *"$KEY_COMBINATION"* ]]; then
+  echo "✅ El atajo '$KEY_COMBINATION' fue asignado correctamente a '$SHORTCUT_NAME'"
+else
+  echo "⚠️ No se pudo asignar el atajo. Verificá si 'gsettings' funciona correctamente en tu sesión."
+fi
