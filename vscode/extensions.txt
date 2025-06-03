@@ -5,3 +5,4 @@ ecmel.vscode-html-css
 golang.go
 vscodevim.vim
 xdebug.php-debug
+SonarSource.sonarlint-vscode
