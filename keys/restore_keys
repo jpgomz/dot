@@ -88,12 +88,19 @@ chmod 700 "$SSH_DIR"
 if ! gpg --list-secret-keys | grep -q sec; then
   if [ -f "$GPG_RESTORED_ASC" ]; then
     echo "[*] Importando claves GPG desde: $GPG_RESTORED_ASC"
-    gpg --import "$GPG_RESTORED_ASC"
-    echo "[✔] Claves GPG importadas correctamente"
+    if gpg --import "$GPG_RESTORED_ASC"; then
+        echo "[✔] Claves GPG importadas correctamente"
+        echo "[*] Eliminando archivo: $GPG_RESTORED_ASC"
+        rm -f "$GPG_RESTORED_ASC"
+    else
+        echo "[✖] Error al importar las claves GPG"
+        exit 1
+    fi
   else
     echo "[!] No hay claves GPG y no se encontró: $GPG_RESTORED_ASC"
     echo "    Exporta tus claves con:"
     echo "    gpg --export-secret-keys --armor > gpg-keys.asc"
+    exit 1
   fi
 else
   echo "[*] Claves GPG ya presentes en el sistema"
