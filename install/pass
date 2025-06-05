@@ -6,7 +6,7 @@
 [ -f /etc/arch-release ] && sudo pacman -S --noconfirm pass gnupg git
 
 # Clonar repositorio password-store
-PASS_REPO="git@github.com:jpgomz/pwd-store.git"
+PASS_REPO="git@github-personal:jpgomz/pwd-store.git"
 PASS_DIR="$HOME/.password-store"
 
 if [ ! -d "$PASS_DIR" ]; then
