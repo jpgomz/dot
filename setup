@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for i in wezterm bash tmux vim git vscode; do
+for i in wezterm bash tmux vim git vscode ssh; do
 	cd "$i" || exit
 	./setup
 	cd - || exit

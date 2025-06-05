@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Replacing ~/.ssh/config with symlink/copy."
+ln -sf "$PWD/config" ~/.ssh/config
