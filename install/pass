@@ -1,47 +1,25 @@
 #!/usr/bin/env bash
 
 # Instalar dependencias
-if [ -f /etc/debian_version ]; then
-    sudo apt-get install -y pass gpg git
-elif [ -f /etc/redhat-release ]; then
-    sudo dnf install -y pass gpg git
-elif [ -f /etc/arch-release ]; then
-    sudo pacman -S --noconfirm pass gnupg git
-else
-    echo "Distro no soportada. Instala manualmente pass y gpg."
-    exit 1
-fi
-
-# Ruta al archivo de clave GPG
-GPG_KEY_FILE="$DOTFILES/keys/gpg-keys.asc"
-
-# Verificar e importar claves GPG
-if ! gpg --list-secret-keys | grep -q sec; then
-    if [ -f "$GPG_KEY_FILE" ]; then
-        echo "Importando claves GPG desde archivo..."
-        gpg --import "$GPG_KEY_FILE"
-    else
-        echo "Error: No hay claves GPG y el archivo $GPG_KEY_FILE no existe"
-        echo "   Exporta tus claves con:"
-        echo "   gpg --export-secret-keys --armor > gpg-keys.asc"
-        exit 1
-    fi
-fi
+[ -f /etc/debian_version ] && sudo apt-get install -y pass gpg git
+[ -f /etc/redhat-release ] && sudo dnf install -y pass gpg git
+[ -f /etc/arch-release ] && sudo pacman -S --noconfirm pass gnupg git
 
 # Clonar repositorio password-store
 PASS_REPO="git@github.com:jpgomz/pwd-store.git"
+PASS_DIR="$HOME/.password-store"
 
-if [ ! -d "$HOME/.password-store" ]; then
+if [ ! -d "$PASS_DIR" ]; then
     echo "Clonando repositorio de contraseñas..."
-    git clone "$PASS_REPO" "$HOME/.password-store"
+    git clone "$PASS_REPO" "$PASS_DIR"
 else
     echo "El directorio .password-store ya existe. Haciendo backup..."
-    mv "$HOME/.password-store" "$HOME/.password-store.bak.$(date +%s)"
-    git clone "$PASS_REPO" "$HOME/.password-store"
+    mv "$PASS_DIR" "$HOME/.password-store.bak.$(date +%s)"
+    git clone "$PASS_REPO" "$PASS_DIR"
 fi
 
-# Verificar configuración GPG
-GPG_ID_FILE="$HOME/.password-store/.gpg-id"
+# Verificar/actualizar .gpg-id
+GPG_ID_FILE="$PASS_DIR/.gpg-id"
 
 # Si el archivo existe y tiene contenido válido
 if [ -f "$GPG_ID_FILE" ] && grep -qE '^[A-F0-9]{40}$' "$GPG_ID_FILE"; then
@@ -62,9 +40,17 @@ else
     echo "Actualizado .gpg-id con fingerprint completo"
 fi
 
-# Sincronización inicial
-echo "Sincronizando contraseñas..."
-pass git pull --rebase
+# Configurar Git
+cd "$PASS_DIR"
+if ! git remote -v | grep -q origin; then
+    git remote add origin "$PASS_REPO"
+fi
+
+# Sincronizar
+echo "➠ Sincronizando contraseñas..."
+git fetch origin
+git reset --hard origin/$(git symbolic-ref --short HEAD)
+cd -
 
 echo "Configuración completada!"
 echo "   Accede a tus contraseñas con: pass show <ruta>"
