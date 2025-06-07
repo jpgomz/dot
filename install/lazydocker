@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+# Variables
+LAZYDOCKER_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | grep tag_name | cut -d '"' -f 4)
+INSTALL_DIR="$HOME/.local/bin"
+TMP_DIR=$(mktemp -d)
+
+# Crear directorio de instalación si no existe
+mkdir -p "$INSTALL_DIR"
+
+# Descargar y descomprimir lazydocker
+echo "Descargando lazydocker $LAZYDOCKER_VERSION..."
+cd "$TMP_DIR"
+curl -sL "https://github.com/jesseduffield/lazydocker/releases/download/${LAZYDOCKER_VERSION}/lazydocker_${LAZYDOCKER_VERSION#v}_Linux_x86_64.tar.gz" -o lazydocker.tar.gz
+tar xf lazydocker.tar.gz lazydocker
+
+# Mover el binario a ~/.local/bin
+mv lazydocker "$INSTALL_DIR"
+
+# Verificar si ~/.local/bin está en PATH
+if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+  echo "Agregando ~/.local/bin al PATH..."
+  source "$HOME/.bashrc"
+fi
+
+# Confirmar instalación
+echo "lazydocker instalado en $INSTALL_DIR"
+"$INSTALL_DIR/lazydocker" --version || echo "lazydocker no muestra versión, pero está instalado."
+
+# Limpiar temporales
+rm -rf "$TMP_DIR"
