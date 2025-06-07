@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+# Variables
+LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep tag_name | cut -d '"' -f 4)
+INSTALL_DIR="$HOME/.local/bin"
+TMP_DIR=$(mktemp -d)
+
+# Crear directorio de instalación si no existe
+mkdir -p "$INSTALL_DIR"
+
+# Descargar y descomprimir lazygit
+echo "Descargando lazygit $LAZYGIT_VERSION..."
+cd "$TMP_DIR"
+curl -sL "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION#v}_Linux_x86_64.tar.gz" -o lazygit.tar.gz
+tar xf lazygit.tar.gz lazygit
+
+# Mover a ~/.local/bin
+mv lazygit "$INSTALL_DIR"
+
+# Asegurar que ~/.local/bin esté en PATH
+if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
+  echo "Agregando ~/.local/bin al PATH..."
+  source "$HOME/.bashrc"
+fi
+
+# Opcional: version check
+echo "lazygit instalado en $INSTALL_DIR"
+"$INSTALL_DIR/lazygit" --version
+
+# Limpiar temporales
+rm -rf "$TMP_DIR"

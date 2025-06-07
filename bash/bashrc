@@ -28,6 +28,55 @@ export PATH=$PATH:$GOPATH/bin
 export SCRIPTS="$HOME/scripts"
 PATH=$PATH:$SCRIPTS
 
+# ------------------------------- path -------------------------------
+
+pathappend() {
+	declare arg
+	for arg in "$@"; do
+		test -d "$arg" || continue
+		PATH=${PATH//":$arg:"/:}
+		PATH=${PATH/#"$arg:"/}
+		PATH=${PATH/%":$arg"/}
+		export PATH="${PATH:+"$PATH:"}$arg"
+	done
+} && export -f pathappend
+
+pathprepend() {
+	for arg in "$@"; do
+		test -d "$arg" || continue
+		PATH=${PATH//:"$arg:"/:}
+		PATH=${PATH/#"$arg:"/}
+		PATH=${PATH/%":$arg"/}
+		export PATH="$arg${PATH:+":${PATH}"}"
+	done
+} && export -f pathprepend
+
+# remember last arg will be first in path
+pathprepend \
+	"$HOME/.local/bin" \
+	"$HOME/.local/go/bin" \
+	"$GHREPOS/cmd-"* \
+	/usr/local/go/bin \
+	/usr/local/opt/openjdk/bin \
+	/usr/local/bin \
+	/opt/homebrew/bin \
+	"$SCRIPTS"
+
+pathappend \
+	/usr/local/opt/coreutils/libexec/gnubin \
+	'/mnt/c/Windows' \
+	'/mnt/c/Program Files (x86)/VMware/VMware Workstation' \
+	/mingw64/bin \
+	/usr/local/bin \
+	/usr/local/sbin \
+	/usr/local/games \
+	/usr/games \
+	/usr/sbin \
+	/usr/bin \
+	/snap/bin \
+	/sbin \
+	/bin
+
 # ----------------------- SSH keys -------------------------------
 # Inicia el agente SSH si no está ya corriendo
 if ! pgrep -u "$USER" ssh-agent > /dev/null; then
