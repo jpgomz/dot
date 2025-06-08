@@ -1,19 +1,31 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-install-wezterm() {
+set -e
 
-	if [[ $OSTYPE =~ ^darwin ]]; then
-		brew install wezterm
-		return
-	fi
+echo "Instalando dependencias necesarias..."
+sudo apt update
+sudo apt install -y curl jq wget
 
-	if [[ $OSTYPE =~ ^msys ]]; then
-		winget install --id wez.wezterm
-		return
-	fi
+echo "Buscando el último release de WezTerm para Debian 12..."
 
-	# TODO add Linux installer
+DEB_URL=$(curl -sL -H "User-Agent: curl" https://api.github.com/repos/wez/wezterm/releases/latest \
+  | jq -r '.assets[]?.browser_download_url' \
+  | grep 'Debian12.deb$')
 
-}
+if [ -z "$DEB_URL" ]; then
+  echo "No se encontró un .deb compatible con Debian 12."
+  exit 1
+fi
 
-install-wezterm
+DEB_FILE=$(basename "$DEB_URL")
+
+echo "Descargando: $DEB_URL"
+wget -O "$DEB_FILE" "$DEB_URL"
+
+echo "Instalando $DEB_FILE ..."
+sudo apt install -y ./"$DEB_FILE"
+
+echo "Limpiando archivos temporales..."
+rm "$DEB_FILE"
+
+echo "WezTerm instalado correctamente desde el último release."
