@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -e
+
+FZF_DIR="${HOME}/.fzf"
+SHELL_RC="$HOME/.bashrc"  # Por defecto, para bash
+[[ -n "$ZSH_VERSION" ]] && SHELL_RC="$HOME/.zshrc"
+
+echo "🔍 Verificando fzf..."
+
+# Instalar o actualizar fzf
+if [ -d "$FZF_DIR" ]; then
+    echo "✅ fzf ya está instalado en $FZF_DIR"
+    read -p "¿Deseas actualizarlo? [s/N]: " resp
+    if [[ "$resp" =~ ^[sS]$ ]]; then
+        git -C "$FZF_DIR" pull
+        yes | "$FZF_DIR/install"
+    fi
+else
+    echo "⬇️ Clonando fzf desde GitHub..."
+    git clone --depth 1 https://github.com/junegunn/fzf.git "$FZF_DIR"
+    yes | "$FZF_DIR/install"
+fi
+
+# Asegurar que ~/.fzf/bin esté al inicio del PATH
+if ! grep -q 'export PATH="$HOME/.fzf/bin:$PATH"' "$SHELL_RC"; then
+    echo -e '\n# Priorizar fzf instalado desde GitHub' >> "$SHELL_RC"
+    echo 'export PATH="$HOME/.fzf/bin:$PATH"' >> "$SHELL_RC"
+fi
+export PATH="$HOME/.fzf/bin:$PATH"  # Para esta sesión también
+
+# Verificar versión actual
+FZF_BIN=$(which fzf)
+FZF_VERSION=$(fzf --version)
+echo "🧭 fzf actual: $FZF_BIN (v$FZF_VERSION)"
+
+# Verificar soporte para `--bash`
+if ! fzf --bash >/dev/null 2>&1; then
+    echo "❌ La versión de fzf activa no soporta --bash"
+    echo "Asegurate de usar la versión de ~/.fzf/bin agregando al inicio del PATH"
+    exit 1
+fi
+
+# Instalar fd o fdfind si no está
+echo "🔍 Buscando fd..."
+if command -v fd > /dev/null; then
+    FD_CMD="fd"
+elif command -v fdfind > /dev/null; then
+    FD_CMD="fdfind"
+else
+    echo "⚠️ fd no encontrado. Intentando instalar..."
+    if command -v apt > /dev/null; then
+        sudo apt update && sudo apt install -y fd-find
+        FD_CMD="fdfind"
+    elif command -v dnf > /dev/null; then
+        sudo dnf install -y fd-find
+        FD_CMD="fd"
+    elif command -v brew > /dev/null; then
+        brew install fd
+        FD_CMD="fd"
+    else
+        echo "❌ No se pudo instalar fd automáticamente. Instalalo manualmente."
+        FD_CMD=""
+    fi
+fi
+
+# Configurar búsqueda mejorada con fd
+if [ -n "$FD_CMD" ] && ! grep -q "FZF_DEFAULT_COMMAND" "$SHELL_RC"; then
+    echo -e "\n# fzf + fd-find configuración" >> "$SHELL_RC"
+    echo "export FZF_DEFAULT_COMMAND=\"$FD_CMD --type f --hidden --follow --exclude .git\"" >> "$SHELL_RC"
+    echo "export FZF_CTRL_T_COMMAND=\"\$FZF_DEFAULT_COMMAND\"" >> "$SHELL_RC"
+    echo "export FZF_ALT_C_COMMAND=\"$FD_CMD --type d --hidden --follow --exclude .git\"" >> "$SHELL_RC"
+fi
+
+# Cargar keybindings y autocompletado
+if ! grep -q ".fzf.bash" "$SHELL_RC" && ! grep -q ".fzf.zsh" "$SHELL_RC"; then
+    echo -e "\n# Keybindings y completado de fzf" >> "$SHELL_RC"
+    if [[ "$SHELL_RC" == *".zshrc" ]]; then
+        echo "[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh" >> "$SHELL_RC"
+    else
+        echo "[ -f ~/.fzf.bash ] && source ~/.fzf.bash" >> "$SHELL_RC"
+    fi
+fi
+
+echo "✅ fzf y búsqueda mejorada configurados."
+echo "🔁 Ejecutá: source $SHELL_RC  o reiniciá tu terminal."
