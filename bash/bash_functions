@@ -99,29 +99,16 @@ pdfcat() {
 }
 
 nvims() {
-  items=("default" "LazyVim" "LazyMisha")
-  config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " \
+  items=("typecraft" "LazyVim" "LazyMisha")
+  config=$(printf "%s\n" "${items[@]}" | fzf --prompt="Neovim Config" \
       --height=50% \
       --layout=reverse \
       --border \
       --margin=5%,49%,49%,0% \
       --exit-0)
-  if [[ -z $config ]]; then
-    echo "Nothing selected"
-    return 0
-  elif [[ $config == "LazyMisha" ]]; then
-    # load scripts to path
-    PATH=$PATH:~/scripts
-    # load external alias
-    source ~/.alias
-  elif [[ $config == "default" ]]; then
-    config=""
-  fi
+  [[ -z "$config" ]] && echo "Nothing selected" && return
   NVIM_APPNAME=$config nvim $@
 }
-
-bind -x '"\C-n\m": nvims'
-bind -x '"\C-n\s": echo Shortcut activated'
 
 clone() {
 	local repo="$1" user
