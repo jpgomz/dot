@@ -1,13 +1,10 @@
 #!/bin/sh
 
 echo "Replacing ~/.config/typecraft with symlink/copy."
-mkdir -p "$HOME/.config/typecraft"
 ln -sf "$PWD/typecraft" "$HOME/.config/typecraft"
 
 echo "Replacing ~/.config/LazyVim with symlink/copy."
-mkdir -p "$HOME/.config/LazyVim"
 ln -sf "$PWD/LazyVim" "$HOME/.config/LazyVim"
 
 echo "Replacing ~/.config/LazyMisha with symlink/copy."
-mkdir -p "$HOME/.config/LazyMisha"
 ln -sf "$PWD/LazyMisha" "$HOME/.config/LazyMisha"

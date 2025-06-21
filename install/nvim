@@ -1,25 +1,36 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-install-neovim() {
+echo "🌀 Obteniendo la última versión de Neovim (Linux x86_64)…"
 
-  # macos
-	if [[ $OSTYPE =~ ^darwin ]]; then
-		brew install neovim
-		return
-	fi
+asset_url=$(curl -s https://api.github.com/repos/neovim/neovim-releases/releases/latest \
+  | jq -r '.assets[]
+      | select(.name == "nvim-linux-x86_64.tar.gz")
+      | .browser_download_url')
 
-	# windows (git bash)
-	if [[ $OSTYPE =~ ^msys ]]; then
-		winget install --id neovim.neovim
-		return
-	fi
+if [[ -z "$asset_url" ]]; then
+  echo "❌ No se encontró el asset 'nvim-linux-x86_64.tar.gz'."
+  exit 1
+fi
 
-	# linux (old, but stable, no coc unfortunately)
-  sudo add-apt-repository ppa:neovim-ppa/stable
-  sudo apt-get install -y software-properties-common
-  sudo apt-get update -y
-  sudo apt-get install -y neovim
+tmp_dir=$(mktemp -d)
+cd "$tmp_dir"
 
-}
+echo "⬇️ Descargando: $asset_url"
+curl -LO "$asset_url"
 
-install-neovim
+echo "📦 Descomprimiendo…"
+tar xzf nvim-linux-x86_64.tar.gz
+
+echo "📁 Instalando en ~/.local"
+rm -rf ~/.local/nvim
+mv nvim-linux-x86_64 ~/.local/nvim
+
+echo "🔗 Enlazando ejecutable en ~/.local/bin"
+mkdir -p ~/.local/bin
+ln -sf ~/.local/nvim/bin/nvim ~/.local/bin/nvim
+
+echo "✅ Instalación finalizada."
+
+echo -e "\n🔍 Verificación:"
+nvim --version | head -n 1
