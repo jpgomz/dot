@@ -1,15 +1,36 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-install-tmux() {
-	if [[ $OSTYPE =~ ^darwin ]]; then
-		brew install tmux
-		return
-	fi
-	if [[ $OSTYPE =~ ^msys ]]; then
-		echo "There is no tmux for Git Bash"
-		return
-	fi
-	sudo apt install -y tmux
-}
+set -e
 
-install-tmux
+# Variables
+TMUX_VERSION_LATEST=$(curl -s https://api.github.com/repos/tmux/tmux/releases/latest | grep tag_name | cut -d '"' -f4)
+TMUX_URL="https://github.com/tmux/tmux/releases/download/${TMUX_VERSION_LATEST}/tmux-${TMUX_VERSION_LATEST#v}.tar.gz"
+
+echo "Última versión de tmux: $TMUX_VERSION_LATEST"
+echo "Instalando dependencias..."
+
+sudo apt update
+sudo apt install -y \
+  automake build-essential pkg-config libevent-dev libncurses-dev curl git bison
+
+
+echo "Descargando tmux ${TMUX_VERSION_LATEST}..."
+curl -L "$TMUX_URL" -o tmux.tar.gz
+
+echo "Extrayendo..."
+tar -xzf tmux.tar.gz
+cd tmux-*
+
+echo "Compilando..."
+./configure
+make
+
+echo "Instalando..."
+sudo make install
+
+echo "Limpieza..."
+cd ..
+rm -rf tmux-* tmux.tar.gz
+
+echo "✅ tmux ${TMUX_VERSION_LATEST} instalado correctamente."
+echo "👉 Verificá con: tmux -V"
