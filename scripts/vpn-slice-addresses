@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Script that starts vpn-slice with the hostnames/subnets 
+# that need to be accessed via the VPN.
+
+#vpn-slice \
+#<host 1> \
+#<host 2> \
+#<CIDR range A> \
+#<CIDR range B>
+
+vpn-slice 172.16.0.0/12
