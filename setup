@@ -1,6 +1,9 @@
 #!/bin/sh
+set -e
 
-for i in wezterm bash tmux vim nvim git vscode ssh; do
+ln -sfn "$PWD/scripts" "$HOME/scripts"
+
+for i in wezterm bash tmux nvim git vscode ssh i3 mpv; do
 	cd "$i" || exit
 	./setup
 	cd - || exit

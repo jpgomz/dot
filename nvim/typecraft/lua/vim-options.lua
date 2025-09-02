@@ -10,6 +10,7 @@ vim.cmd("set scrolloff=8")
 vim.cmd("set splitbelow")
 vim.cmd("set wrap")
 vim.cmd("set virtualedit=block")
+vim.cmd("set cmdheight=0")
 
 vim.keymap.set('n', '<leader>h', ':nohlsearch<CR>')
 

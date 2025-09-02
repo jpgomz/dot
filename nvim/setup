@@ -8,3 +8,6 @@ ln -sf "$PWD/LazyVim" "$HOME/.config/LazyVim"
 
 echo "Replacing ~/.config/LazyMisha with symlink/copy."
 ln -sf "$PWD/LazyMisha" "$HOME/.config/LazyMisha"
+
+echo "Replacing ~/.config/ThePrimeagen with symlink/copy."
+ln -sf "$PWD/ThePrimeagen/init.vim" "$HOME/.config/nvim/init.vim"
