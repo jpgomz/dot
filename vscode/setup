@@ -11,3 +11,7 @@ ln -sf "$PWD/keybindings.json" "$HOME/.config/Code/User/keybindings.json"
 echo "Replacing ~/.config/Code/User/extensions.txt with symlink/copy."
 mkdir -p "$HOME/.config/Code/User"
 ln -sf "$PWD/extensions.txt" "$HOME/.config/Code/User/extensions.txt"
+
+echo "Replacing $COMPRAS/.vscode/launch.json with symlink/copy."
+mkdir -p "$COMPRAS/back/.vscode"
+ln -sf "$PWD/projects/compras/launch.json" "$COMPRAS/back/.vscode/launch.json"

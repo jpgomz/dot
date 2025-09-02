@@ -1,0 +1,9 @@
+{
+    "files.autoSave": "afterDelay",
+    "vim.handleKeys": {
+        "<C-w>": false,
+        "<C-p>": false
+    },
+    "vim.useSystemClipboard": true,
+    "editor.minimap.enabled": false
+}

@@ -1,0 +1,49 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+
+        {
+            "name": "Listen for XDebug Localhost",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "xdebugSettings": {
+                "max_data": -1,
+                "max_children": 80,
+                "max_depth": 5
+            },
+            "pathMappings": {
+                "/var/www/backend": "${workspaceFolder}",
+            }
+        },
+        {
+            "name": "Listen for XDebug Comprasdev",
+            "type": "php",
+            "request": "launch",
+            "port": 9100,
+            "xdebugSettings": {
+                "max_data": -1,
+                "max_children": 50
+            },
+            "pathMappings": {
+                "/var/www/compras/dev/releases/20230210110838": "${workspaceFolder}",
+            }
+        },
+        {
+            "name": "Listen for XDebug ComprasMant",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "xdebugSettings": {
+                "max_data": -1,
+                "max_children": 50
+            },
+            "pathMappings": {
+                "/var/www/compras/mant/releases/20250711125824": "${workspaceFolder}",
+            }
+        }
+    ]
+}
