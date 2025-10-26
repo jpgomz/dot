@@ -2,3 +2,5 @@
 
 echo "Replacing ~/.gitconfig with symlink/copy."
 ln -sf "$PWD/gitconfig" ~/.gitconfig
+echo "Replacing ~/.gitconfig-santex with symlink/copy."
+ln -sf "$PWD/gitconfig-santex" ~/.gitconfig-santex

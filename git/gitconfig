@@ -13,3 +13,7 @@
 	name = Juan P. Gomez
 [init]
 	defaultBranch = main
+
+# Si el repositorio está dentro de /home/jpgomz/Repos/santex/, usar la configuración laboral
+[includeIf "gitdir:/home/jpgomz/Repos/santex/"]
+    path = ~/.gitconfig-santex
