@@ -1,6 +1,6 @@
 #!/bin/sh
 
 sudo apt-install update
-sudo apt-get -y install nmap jq yq pcregrep lynx make uidmap python-is-python3 libcurses-perl build-essential libncurses-dev autoconf entr pip curl bash-completion skopeo buildah apt-transport-https ca-certificates curl gpg shellcheck shfmt tree fio neovim
+sudo apt-get -y install nmap jq yq pcregrep lynx make uidmap python-is-python3 libcurses-perl build-essential libncurses-dev autoconf entr pip curl bash-completion skopeo buildah apt-transport-https ca-certificates curl gpg shellcheck shfmt tree fio neovim vim-gtk3 default-mysql-client ripgrep pulseaudio-utils ffmpeg 
 
 # yq is missing because the apt version is the shitty python version

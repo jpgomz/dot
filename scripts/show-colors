@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "Paleta de colores 256 - Texto coloreado:"
+for i in {0..255}; do
+  printf "\x1b[38;5;%smcolour%-3s " "$i" "$i"
+  if (( (i + 1) % 16 == 0 )); then
+    printf "\n"
+  fi
+done
+
+echo -e "\nPaleta de colores 256 - Fondo coloreado:"
+for i in {0..255}; do
+  printf "\x1b[48;5;%sm  %3s  \x1b[0m" "$i" "$i"
+  if (( (i + 1) % 16 == 0 )); then
+    printf "\n"
+  fi
+done
+

@@ -1,0 +1,49 @@
+#!/bin/sh
+
+echo "Creating ~/.config/i3 directory if it doesn't exist..."
+mkdir -p ~/.config/i3
+
+echo "Creating symlinks for i3 configuration..."
+
+# Symlink config file
+echo "Linking config file..."
+ln -sf "$PWD/config" ~/.config/i3/config
+
+# Symlink directories
+echo "Linking background directory..."
+ln -sfn "$PWD/background" ~/.config/i3/background
+
+echo "Linking displays directory..."
+ln -sfn "$PWD/displays" ~/.config/i3/displays
+
+echo "Linking scripts directory..."
+ln -sfn "$PWD/scripts" ~/.config/i3/scripts
+
+echo "i3 configuration symlinks created successfully."
+
+# Picom configuration
+echo "Creating ~/.config/picom directory if it doesn't exist..."
+mkdir -p ~/.config/picom
+
+echo "Linking picom directory..."
+ln -sf "$PWD/picom/picom.conf" ~/.config/picom/picom.conf
+
+# Polybar configuration
+echo "Creating ~/.config/polybar directory if it doesn't exist..."
+mkdir -p ~/.config/polybar
+
+echo "Linking polybar configuration files..."
+ln -sf "$PWD/polybar/colors.ini" ~/.config/polybar/colors.ini
+ln -sf "$PWD/polybar/config.ini" ~/.config/polybar/config.ini
+ln -sf "$PWD/polybar/debian.ini" ~/.config/polybar/debian.ini
+ln -sf "$PWD/polybar/launch_polybar.sh" ~/.config/polybar/launch_polybar.sh
+
+# Rofi configuration
+echo "Creating ~/.config/rofi directory if it doesn't exist..."
+mkdir -p ~/.config/rofi
+
+echo "Linking rofi configuration files..."
+ln -sf "$PWD/rofi/config.rasi" ~/.config/rofi/config.rasi
+ln -sf "$PWD/rofi/nord.rasi" ~/.config/rofi/nord.rasi
+
+echo "All configuration symlinks created successfully."

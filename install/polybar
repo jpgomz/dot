@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Script corregido para instalar Polybar 3.7 incluyendo submodulos
+
+# Colores para la salida
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Función para instalar dependencias
+install_deps() {
+    echo -e "${YELLOW}[+] Instalando todas las dependencias necesarias...${NC}"
+    sudo apt update && sudo apt install -y \
+        build-essential git cmake cmake-data pkg-config python3-sphinx \
+        libcairo2-dev libxcb1-dev libxcb-util0-dev libxcb-randr0-dev \
+        libxcb-composite0-dev python3-xcbgen xcb-proto libxcb-image0-dev \
+        libxcb-ewmh-dev libxcb-icccm4-dev libxcb-xkb-dev libxcb-xrm-dev \
+        libxcb-cursor-dev libasound2-dev libpulse-dev libjsoncpp-dev \
+        libmpdclient-dev libcurl4-openssl-dev libnl-genl-3-dev \
+        libuv1-dev libxcb-xinerama0-dev libxcb-xtest0-dev
+}
+
+compile_polybar() {
+    local install_dir="/usr/local"
+    local polybar_dir="$HOME/polybar-build"
+    local branch="3.7.0"
+
+    echo -e "${YELLOW}[+] Configurando entorno de construcción...${NC}"
+    mkdir -p "$polybar_dir" && cd "$polybar_dir" || exit 1
+    
+    # Clonar incluyendo submodulos
+    echo -e "${YELLOW}[+] Clonando repositorio con submodulos...${NC}"
+    git clone --recursive --branch "$branch" --depth 1 https://github.com/polybar/polybar.git
+    
+    cd polybar || exit 1
+    
+    # Verificar que los submodulos están presentes
+    if [ ! -f "lib/xpp/CMakeLists.txt" ]; then
+        echo -e "${YELLOW}[+] Descargando submodulos faltantes...${NC}"
+        git submodule update --init --recursive
+    fi
+    
+    mkdir -p build && cd build || exit 1
+    
+    echo -e "${YELLOW}[+] Ejecutando cmake...${NC}"
+    cmake .. -DCMAKE_INSTALL_PREFIX="$install_dir"
+    
+    echo -e "${YELLOW}[+] Compilando...${NC}"
+    make -j$(nproc)
+    
+    echo -e "${YELLOW}[+] Instalando...${NC}"
+    sudo make install
+    
+    echo -e "${YELLOW}[+] Limpiando...${NC}"
+    cd ../.. && rm -rf "$polybar_dir"
+}
+
+main() {
+    install_deps
+    compile_polybar
+    
+    echo -e "${GREEN}[√] Polybar 3.7 instalado correctamente${NC}"
+    polybar --version
+    echo -e "Configuración de ejemplo en /usr/local/share/doc/polybar/config"
+}
+
+main

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Abrir diálogo para elegir archivo de video
+FILE=$(zenity --file-selection \
+    --title="Elegir un archivo de video" \
+    --file-filter="Videos | *.mp4 *.mkv *.avi *.mov *.flv *.webm")
+
+# Si se seleccionó un archivo, abrirlo con mpv
+if [ -n "$FILE" ]; then
+    mpv --fullscreen "$FILE"
+fi

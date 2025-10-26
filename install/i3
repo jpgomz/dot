@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+# Script de instalación de i3 y dependencias para Debian
+# Autor: jpgomz
+# Descripción: Instala i3 window manager y todas sus dependencias necesarias
+
+set -e  # Salir si algún comando falla
+
+# Colores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Función para imprimir mensajes
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[!]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[✗]${NC} $1"
+}
+
+print_info "Iniciando instalación de i3 y dependencias..."
+echo ""
+
+# Actualizar repositorios
+print_info "Actualizando lista de paquetes..."
+if sudo apt update; then
+    print_success "Repositorios actualizados"
+else
+    print_error "Error al actualizar repositorios"
+    exit 1
+fi
+
+echo ""
+
+# Lista de paquetes a instalar
+PACKAGES=(
+    "i3"              # Gestor de ventanas principal
+    "i3status"        # Información del sistema en la barra
+    "dmenu"           # Lanzador de aplicaciones liviano
+    "i3lock"          # Bloqueo de sesión
+    "xbacklight"      # Control de brillo
+    "feh"             # Fondos de pantalla
+    "arandr"          # Configuración gráfica de monitores
+    "picom"           # Compositor (transparencias, sombras)
+    "lxappearance"    # Cambiar temas GTK
+    "rofi"            # Lanzador de aplicaciones avanzado
+    "gammastep"       # Control de temperatura de color
+    "mpv"             # Reproductor multimedia
+    "flameshot"       # Capturas de pantalla
+    "zenity"          # Diálogos gráficos
+    "slop"            # Selección de región de pantalla
+)
+
+# Mostrar paquetes a instalar
+print_info "Paquetes a instalar:"
+for package in "${PACKAGES[@]}"; do
+    echo "  - $package"
+done
+echo ""
+
+# Instalar paquetes
+print_info "Instalando paquetes..."
+echo ""
+
+FAILED_PACKAGES=()
+
+for package in "${PACKAGES[@]}"; do
+    print_info "Instalando $package..."
+    if sudo apt install -y "$package"; then
+        print_success "$package instalado correctamente"
+    else
+        print_warning "$package falló al instalar"
+        FAILED_PACKAGES+=("$package")
+    fi
+done
+
+echo ""
+
+# Resumen de instalación
+if [ ${#FAILED_PACKAGES[@]} -eq 0 ]; then
+    print_success "¡Todos los paquetes se instalaron correctamente!"
+else
+    print_warning "Los siguientes paquetes fallaron al instalar:"
+    for package in "${FAILED_PACKAGES[@]}"; do
+        echo "  - $package"
+    done
+    echo ""
+    print_info "Puedes intentar instalarlos manualmente con:"
+    echo "  sudo apt install ${FAILED_PACKAGES[*]}"
+fi
+
+echo ""
+
+# Información adicional
+print_info "Información adicional:"
+echo "  - Para iniciar i3, agrega 'exec i3' a tu ~/.xinitrc o selecciónalo en tu display manager"
+echo "  - Configuración de i3: ~/.config/i3/config"
+echo "  - Configuración de i3status: ~/.config/i3status/config"
+echo "  - Para configurar picom, crea: ~/.config/picom/picom.conf"
+echo "  - Documentación de i3: https://i3wm.org/docs/"
+
+echo ""
+print_success "Instalación completada"

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Replacing ~/.mpv.conf with symlink/copy."
+ln -sf "$PWD/mpv.conf" ~/.config/mpv/mpv.conf
+

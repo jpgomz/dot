@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- Configuración ---
+FFMPEG="/usr/bin/ffmpeg"
+SLOP="/usr/bin/slop"
+NOTIFY="/usr/bin/notify-send"
+OUTDIR="$HOME/Videos"
+mkdir -p "$OUTDIR"
+
+export DISPLAY="${DISPLAY:-:0}"
+
+TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+RAW="$OUTDIR/screencast_${TIMESTAMP}.mkv"
+FINAL="$OUTDIR/screencast_${TIMESTAMP}.mp4"
+
+PIDFILE="/tmp/ffmpeg_screenrecorder.pid"
+LOGFILE="/tmp/screencast_ffmpeg.log"
+
+# --- Iniciar grabación ---
+cmd_start() {
+  if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    $NOTIFY "🎥 Ya hay una grabación en curso" "PID=$(cat "$PIDFILE")"
+    exit 0
+  fi
+
+  GEOM="$($SLOP -f "%x %y %w %h")" || exit 1
+  read -r X Y W H <<<"$GEOM"
+
+  "$FFMPEG" -y \
+    -video_size "${W}x${H}" -framerate 30 \
+    -f x11grab -i ":0.0+$X,$Y" \
+    -f pulse -i default \
+    -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+    -c:v libx264 -preset ultrafast -crf 23 \
+    -pix_fmt yuv420p \
+    -c:a aac -b:a 128k -ac 2 \
+    -movflags +faststart \
+    "$RAW" >/dev/null 2>"$LOGFILE" &
+
+  echo $! >"$PIDFILE"
+  echo "$RAW" >"${PIDFILE}.file"
+  $NOTIFY "🎥 Grabación iniciada" "$RAW"
+}
+
+# --- Detener grabación y convertir ---
+cmd_stop() {
+  if [ -f "$PIDFILE" ]; then
+    pid="$(cat "$PIDFILE")"
+    infile="$(cat "${PIDFILE}.file")"
+    outfile="${infile%.mkv}.mp4"
+
+    # Enviar señal de terminación suave
+    if kill -0 "$pid" 2>/dev/null; then
+      kill -INT "$pid" 2>/dev/null || true
+      
+      # Esperar a que ffmpeg termine de escribir el archivo (máximo 10 segundos)
+      for i in {1..20}; do
+        if ! kill -0 "$pid" 2>/dev/null; then
+          break
+        fi
+        sleep 0.5
+      done
+      
+      # Si aún está corriendo, forzar terminación
+      if kill -0 "$pid" 2>/dev/null; then
+        kill -9 "$pid" 2>/dev/null || true
+        sleep 1
+      fi
+    fi
+
+    rm -f "$PIDFILE" "${PIDFILE}.file"
+
+    # Verificar que el archivo existe y tiene contenido
+    if [ ! -f "$infile" ]; then
+      $NOTIFY "❌ Error" "Archivo de grabación no encontrado: $infile"
+      echo "ERROR: Archivo no encontrado: $infile" >> "$LOGFILE"
+      exit 1
+    fi
+
+    filesize=$(stat -c%s "$infile" 2>/dev/null || echo 0)
+    if [ "$filesize" -eq 0 ]; then
+      $NOTIFY "❌ Error" "Archivo de grabación vacío (0 bytes). Revisa $LOGFILE"
+      echo "ERROR: Archivo vacío: $infile" >> "$LOGFILE"
+      exit 1
+    fi
+
+    # Reencode para compatibilidad universal (Webex, Slack, Windows)
+    if "$FFMPEG" -y -i "$infile" \
+      -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+      -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p \
+      -c:a aac -b:a 160k -ac 2 \
+      -movflags +faststart \
+      "$outfile" 2>>"$LOGFILE"; then
+      
+      rm -f "$infile"
+      $NOTIFY "🛑 Grabación detenida" "Guardado en $outfile"
+    else
+      $NOTIFY "❌ Error en conversión" "Revisa $LOGFILE. Archivo raw: $infile"
+      echo "ERROR: Falló la conversión de $infile a $outfile" >> "$LOGFILE"
+      exit 1
+    fi
+  else
+    $NOTIFY "⚠️ No hay grabación activa"
+  fi
+}
+
+case "${1:-}" in
+  start) cmd_start ;;
+  stop)  cmd_stop ;;
+  *) echo "Uso: $0 {start|stop}" >&2; exit 1 ;;
+esac
