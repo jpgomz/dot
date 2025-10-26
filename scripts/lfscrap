@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -e
+
+# Directorio de entrada (primer parámetro)
+INPUT_DIR="$1"
+
+if [ -z "$INPUT_DIR" ]; then
+  echo "Uso: $0 <directorio_htmls> [video] [upload]"
+  exit 1
+fi
+
+# Nombre del entorno virtual
+VENV_DIR="$HOME/.venvs/lfscrap"
+
+# Crear entorno virtual si no existe
+if [ ! -d "$VENV_DIR" ]; then
+  echo "🔧 Creando entorno virtual..."
+  python3 -m venv "$VENV_DIR"
+fi
+
+# Activar entorno virtual
+source "$VENV_DIR/bin/activate"
+
+# Dependencias necesarias
+DEPENDENCIES=(
+  "beautifulsoup4"
+  "lxml"
+  "python-dotenv"
+  "b2sdk"
+)
+
+# Instalar dependencias
+echo "📦 Instalando dependencias..."
+pip install -q "${DEPENDENCIES[@]}"
+
+# Ejecutar el script Python con uno o dos parámetros
+echo "🚀 Procesando archivos en: $INPUT_DIR $2 $3"
+
+python "$SCRIPTS/lfscrap.py" "$INPUT_DIR" "$2" "$3"
+
+# Desactivar entorno virtual
+deactivate
