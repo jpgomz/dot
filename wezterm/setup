@@ -14,10 +14,10 @@ if [[ "$OSTYPE" = "msys" ]]; then
 	powershell -Command '& ([scriptblock]::Create((iwr "https://to.loredo.me/Install-NerdFont.ps1"))) -Name "ubuntu-mono" -Confirm:$false
 '
 else
-	if [[ ! -e ~/.local/share/fonts/UbuntuMonoNerdFont-Regular.ttf ]]; then
-		echo "Installing 'UbuntuMono Nerd Font' fonts."
+	if [[ ! -e ~/.local/share/fonts/HackNerdFont-Regular.ttf ]]; then
+		echo "Installing 'HackNerdFont-Regular.ttf' fonts."
 		mkdir -p ~/.local/share/fonts
-		unzip UbuntuMono.zip -d ~/.local/share/fonts/
+		unzip Hack.zip -d ~/.local/share/fonts/
 		fc-cache -fv
 	fi
 fi

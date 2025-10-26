@@ -39,7 +39,7 @@ local function detect_font()
   if os == "windows" then
     return wezterm.font("Ubuntu Mono")
   else
-    return wezterm.font("UbuntuMono Nerd Font")
+    return wezterm.font("Hack Nerd Font")
   end
 end
 
@@ -51,18 +51,20 @@ return {
 
   color_scheme = 'Gruvbox Material (Gogh)',
   font = detect_font(),
-  font_size = 26,
+  font_size = 12,
 
   window_padding = {
-   left = 40,
+   left = 20,
    right = 0,
    top = 0,
-   bottom = 2,
+   bottom = 0,
   },
 
   term = "xterm-256color",
   animation_fps = 60,
   max_fps = 60,
+
+  enable_tab_bar = false,
 
   ----------- rwxrob streaming stuff, fyi --------------
 
