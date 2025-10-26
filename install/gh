@@ -1,10 +1,24 @@
 #!/bin/sh
 
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
-  sudo dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg |
+	sudo dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
-  sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" |
+	sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
 
 sudo apt update
 sudo apt install gh
+
+# Agregar completado directamente al .bashrc (si no existe ya)
+grep -q 'gh completion -s bash' "$HOME/.bashrc" || cat << 'EOF' >> "$HOME/.bashrc"
+
+# Completado de GitHub CLI
+# ghp -> gh-personal
+# ghw -> gh-work
+if command -v gh >/dev/null 2>&1; then
+  eval "$(gh completion -s bash)"
+  complete -F __start_gh ghp ghw 2>/dev/null
+fi
+EOF
+
+echo "Instalación completa. Reiniciá tu terminal o ejecutá: source ~/.bashrc"

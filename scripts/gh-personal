@@ -1,0 +1,3 @@
+#!/bin/bash
+export GH_CONFIG_DIR="$HOME/.config/gh-personal"
+gh "$@"

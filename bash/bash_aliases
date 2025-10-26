@@ -22,12 +22,12 @@ alias h1='history 10'
 alias h2='history 20'
 alias h3='history 30'
 
-alias cdb='cd $REPOS/agd-portalcompras-back'
-alias cdf='cd $REPOS/agd-portalcompras-front'
+alias cdb='cd $COMPRAS/back'
+alias cdf='cd $COMPRAS/front/v2'
 alias cdd='cdb && cd docker'
 # alias gh='cd ~'
 alias dbd='cdd && docker compose exec comprasdb /usr/bin/mysqldump -uroot -proot --add-drop-database --default-character-set=utf8mb4 --databases compras | gzip > ~/Documents/backup/compras_mant.gz'
-alias dbdnd='cdd && docker compose exec comprasdb /usr/bin/mysqldump -uroot -proot --no-data agd_proveedores_main > ~/Documents/backup/no-data.sql' 
+alias dbdnd='cdd && docker compose exec comprasdb /usr/bin/mysqldump -uroot -proot --no-data agd_proveedores_main > ~/Documents/backup/no-data.sql'
 alias mdump='docker compose exec comprasdb /usr/bin/mysqldump'
 alias mcli='docker compose exec comprasdb mysql -u root -proot compras'
 alias mimp='cdd && docker compose exec -T comprasdb mysql -u root -proot'
@@ -56,7 +56,7 @@ alias c="clear"
 #alias skool='cd $REPOS/github.com/mischavandenburg/skool/kubernetes-fundamentals'
 #alias cdq='cd $REPOS/github.com/jackyzha0/quartz'
 
-# apt 
+# apt
 alias install='sudo apt install'
 # update on one command
 alias update='sudo apt update && sudo apt upgrade'
@@ -103,7 +103,7 @@ alias nowtime=now
 alias nowdate='date +"%d-%m-%Y"'
 
 #10: Set vim as default
-alias v=nvim
+alias v="NVIM_APPNAME=typecraft nvim"
 alias vi=nvim
 alias svi='sudo nvim'
 alias vis='nvim "+set si"'
@@ -162,7 +162,7 @@ alias vnstat='vnstat -i eth1'
 alias iftop='iftop -i eth1'
 alias tcpdump='tcpdump -i eth1'
 alias ethtool='ethtool eth1'
- 
+
 # work on wlan0 by default #
 # Only useful for laptop as all servers are without wireless interface
 alias iwconfig='iwconfig wlan0'
@@ -170,21 +170,21 @@ alias iwconfig='iwconfig wlan0'
 #25: Get system memory, cpu usage, and gpu memory info quickly
 ## pass options to free ##
 alias meminfo='free -m -l -t'
- 
+
 ## get top process eating memory
 alias psmem='ps auxf | sort -nr -k 4'
 alias psmem10='ps auxf | sort -nr -k 4 | head -10'
- 
+
 ## get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3'
 alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
- 
+
 ## Get server cpu info ##
 alias cpuinfo='lscpu'
- 
+
 ## older system use /proc/cpuinfo ##
 ##alias cpuinfo='less /proc/cpuinfo' ##
- 
+
 ## get GPU ram on desktop / laptop##
 alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
@@ -192,18 +192,21 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 ## this one saved by butt so many times ##
 alias wget='wget -c'
 
+# Quick Local Web Server
+alias serve='python3 -m http.server 8000'
+
 ## set some other defaults ##
 alias df='df -H'
 alias du='du -ch'
 # get top dirs eating space
 # sudo du -h --max-depth=1 /var/lib/jenkins/workspace/ | sort -hr | head -n 10
 
-
 # finds all files recursively and sorts by last modification, ignore hidden files
 alias last='find . -type f -not -path "*/\.*" -exec ls -lrt {} +'
 
 alias sv='sudoedit'
 alias t='tmux'
+alias colors="~/scripts/show-colors"
 #alias e='exit'
 #alias syu='sudo pacman -Syu'
 
@@ -222,6 +225,9 @@ alias current_branch="git rev-parse --abbrev-ref HEAD"
 alias pull='git pull origin $(current_branch)'
 alias push='git push --set-upstream origin $(current_branch)'
 
+# gh
+alias ghp='gh-personal'
+alias ghw='gh-work'
 
 # ricing
 alias et='v ~/.config/awesome/themes/powerarrow/theme-personal.lua'
@@ -231,14 +237,16 @@ alias eb='v ~/.bashrc'
 alias ev='cd ~/.config/nvim/ && v init.lua'
 alias sbr='source ~/.docker compose exec nvim grep -E "^(ID|NAME)=" /etc/os-release | grep -q "alpine"bashrc'
 alias sb='source ~/.bashrc'
-alias ea='v ~/.alias'
+alias ea='v ~/.bash_aliases'
+alias ef='v ~/.bash_functions'
+alias ei3='v ~/.config/i3/config'
 
 # docker
 alias dcu='cdd && docker compose up'
 alias dcd='cdd && docker compose down'
 alias dem='cdd && docker compose exec comprasdb mysql -uroot -proot compras'
 alias demo='cdd && docker compose exec comprasmongo bash'
-alias dep='cdd && docker compose exec comprasphp bash'
+alias dep='cdd && docker compose exec --user www-data comprasphp bash'
 alias den='cdd && docker compose exec comprasnginx bash'
 alias dcp='cdd && docker compose cp'
 
@@ -290,3 +298,16 @@ alias vf='v $(fp)'
 alias chromedebug='google-chrome --remote-debugging-port=9222'
 alias validate-braces='validate_braces'
 
+# show current keyboard layout
+alias layout='setxkbmap -print -verbose 10 | grep layout'
+
+# PulseAudio settings
+alias painfo="pactl info"
+alias paout="pactl list short sinks"
+alias patest='aplay /usr/share/sounds/alsa/Front_Center.wav'
+
+# Lanzar Webex
+alias webex='/opt/Webex/bin/CiscoCollabHost %U'
+
+# Quick sudo Fix
+alias please='sudo $(fc -ln -1)'

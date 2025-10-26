@@ -11,21 +11,27 @@ esac
 _have() { type "$1" &>/dev/null; }
 _source_if() { [[ -r "$1" ]] && source "$1"; }
 
+# ----------------------- bash bindings ------------------------------
+bind '"\C-f": "tmux-sessionizer\n"'
+bind -x '"\C-g": fzf_live_grep'
+
 # ----------------------- environment variables ----------------------
 export VISUAL=nvim
 export EDITOR=nvim
 export USER="${USER:-$(whoami)}"
 export GITUSER="$USER"
 export REPOS="$HOME/Repos"
+export DEVOPS="$REPOS/devops"
+export COMPRAS="$REPOS/santex/compras"
 export GHREPOS="$REPOS/github.com/$GITUSER"
 export DOTFILES="$GHREPOS/dot"
-export XDEBUG_REMOTE_HOST=$(hostname -I | awk '{print $1;exit}')
-export XDEBUG_CONFIG="idekey=VSCODE"
-export GIT_EDITOR=vim
+export GIT_EDITOR=nvim
 export PATH=$PATH:/usr/local/go/bin
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 export SCRIPTS="$HOME/scripts"
+export XDG_CURRENT_DESKTOP=i3
+export XDG_SESSION_DESKTOP=i3
 
 # ------------------------------- path -------------------------------
 
@@ -77,16 +83,17 @@ pathappend \
 	/bin
 
 # ----------------------- SSH keys -------------------------------
-# Inicia el agente SSH si no está ya corriendo
+# Auto-iniciar ssh-agent
 if ! pgrep -u "$USER" ssh-agent > /dev/null; then
-    eval "$(ssh-agent -s)"
+    eval "$(ssh-agent -s)" > /dev/null
 fi
-
 # Agregar todas las claves en el directorio ~/.ssh/
-for key in $HOME/.ssh/*; do
-    if [ -f "$key" ] && [[ "$key" != *.pub ]]; then
-        ssh-add "$key" 2>/dev/null
-    fi
+for key in "$HOME/.ssh/"*; do
+	if [[ -f "$key" && "$key" != *.pub ]]; then
+		if grep -q "PRIVATE KEY" "$key"; then
+			ssh-add "$key" 2>/dev/null
+		fi
+	fi
 done
 
 # ------------------------------- pager ------------------------------
@@ -143,9 +150,13 @@ __ps1() {
 		PS1="$short"
 	fi
 
-	if _have tmux && [[ -n "$TMUX" ]]; then
-		tmux rename-window "$(wd)"
-	fi
+	#if _have tmux && [[ -n "$TMUX" ]]; then
+  #  # Solo renombrar si estamos en bash/shell, no si hay una app corriendo
+  #  current_cmd=$(ps -o comm= -p $$)
+  #  if [[ "$current_cmd" == "bash" || "$current_cmd" == "zsh" ]]; then
+  #      tmux rename-window "$(wd)";
+  #  fi
+	#fi
 }
 
 wd() {
@@ -166,24 +177,23 @@ export HISTFILESIZE=10000
 shopt -s histappend
 
 if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
+	. ~/.bash_aliases
 fi
 
 if [ -f ~/.bash_functions ]; then
-    . ~/.bash_functions
+	. ~/.bash_functions
 fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
 if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
-  fi
+	if [ -f /usr/share/bash-completion/bash_completion ]; then
+		. /usr/share/bash-completion/bash_completion
+	elif [ -f /etc/bash_completion ]; then
+		. /etc/bash_completion
+	fi
 fi
-
 
 # ------------------------- NVM trash ahead ------------------------
 # (keep as is or nvm idiotic installer will re-add to bashrc next time)
@@ -200,3 +210,9 @@ export PATH="$HOME/.fzf/bin:$PATH"
 export FZF_DEFAULT_COMMAND="fdfind --type f --hidden --follow --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fdfind --type d --hidden --follow --exclude .git"
+
+# Completado de GitHub CLI
+if command -v gh >/dev/null 2>&1; then
+  eval "$(gh completion -s bash)"
+  complete -F __start_gh ghp ghw 2>/dev/null
+fi
