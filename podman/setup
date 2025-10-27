@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [[ ! $(type podman) ]]; then
+	echo "Podman no está instalado. Ejecutá primero: ./install/podman"
+	exit 1
+fi
+
+echo "Creando directorio de configuración de Podman..."
+mkdir -p "$HOME/.config/containers"
+
+echo "Reemplazando ~/.config/containers/policy.json con symlink..."
+ln -sf "$PWD/policy.json" "$HOME/.config/containers/policy.json"
+
+echo "Reemplazando ~/.config/containers/registries.conf con symlink..."
+ln -sf "$PWD/registries.conf" "$HOME/.config/containers/registries.conf"
+
+echo ""
+echo "Configuración de Podman completada."
+echo "Archivos configurados:"
+echo "  - ~/.config/containers/policy.json"
+echo "  - ~/.config/containers/registries.conf"
+echo ""
+echo "Probá la instalación con:"
+echo "  podman run --rm hello-world"

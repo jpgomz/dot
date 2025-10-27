@@ -1,0 +1,53 @@
+{
+    "default": [
+        {
+            "type": "insecureAcceptAnything"
+        }
+    ],
+    "transports": {
+        "docker-daemon": {
+            "": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ]
+        },
+        "docker": {
+            "docker.io": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ],
+            "quay.io": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ],
+            "registry.fedoraproject.org": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ],
+            "registry.access.redhat.com": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ],
+            "registry.centos.org": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ],
+            "gcr.io": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ],
+            "ghcr.io": [
+                {
+                    "type": "insecureAcceptAnything"
+                }
+            ]
+        }
+    }
+}

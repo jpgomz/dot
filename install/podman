@@ -1,0 +1,41 @@
+#!/bin/bash
+set -e
+
+echo "[+] Actualizando sistema..."
+sudo apt update
+
+echo "[+] Limpiando instalaciones previas..."
+sudo apt remove -y containers-common podman buildah || true
+sudo apt autoremove -y
+sudo apt --fix-broken install -y
+
+echo "[+] Eliminando repositorios externos de Podman..."
+sudo rm -f /etc/apt/sources.list.d/podman.list
+sudo rm -f /etc/apt/keyrings/podman.gpg
+sudo apt update
+
+echo "[+] Instalando Podman desde repositorios oficiales de Debian..."
+sudo apt install -y podman
+
+echo "[+] Configurando Podman para uso rootless..."
+sudo apt install -y slirp4netns uidmap fuse-overlayfs
+
+echo "[+] Configurando rangos de UID/GID para el usuario actual..."
+if ! grep -q "^${USER}:" /etc/subuid; then
+    echo "${USER}:100000:65536" | sudo tee -a /etc/subuid
+fi
+if ! grep -q "^${USER}:" /etc/subgid; then
+    echo "${USER}:100000:65536" | sudo tee -a /etc/subgid
+fi
+
+echo "[+] Habilitando el socket de Podman para el usuario actual..."
+systemctl --user enable --now podman.socket || true
+
+echo "[+] Podman $(podman --version) instalado correctamente."
+echo ""
+echo "Para probar la instalación ejecutá:"
+echo "  podman run --rm hello-world"
+echo ""
+echo "NOTA: Debian 12 incluye Podman 4.3.1 en sus repositorios oficiales."
+echo "      Si necesitás una versión más reciente, considerá usar Debian Testing/Sid"
+echo "      o compilar desde el código fuente."

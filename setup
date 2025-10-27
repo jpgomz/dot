@@ -3,7 +3,7 @@ set -e
 
 ln -sfn "$PWD/scripts" "$HOME/scripts"
 
-for i in wezterm bash tmux nvim git vscode ssh i3 mpv; do
+for i in wezterm bash tmux nvim git vscode ssh i3 mpv podman; do
 	cd "$i" || exit
 	./setup
 	cd - || exit
