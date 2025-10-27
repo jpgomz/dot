@@ -221,6 +221,7 @@ alias grc='git co RC_MANTENIMIENTO'
 alias gall='git add -A'
 alias gcp='git cherry-pick'
 alias lg='lazygit'
+alias lzp="lazypodman"
 alias current_branch="git rev-parse --abbrev-ref HEAD"
 alias pull='git pull origin $(current_branch)'
 alias push='git push --set-upstream origin $(current_branch)'

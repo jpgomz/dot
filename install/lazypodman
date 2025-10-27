@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+
+# Variables
+INSTALL_DIR="$HOME/.local/bin"
+TMP_DIR=$(mktemp -d)
+
+echo "[+] Habilitando el socket de Docker en Podman..."
+systemctl --user enable --now podman.socket
+
+echo "[+] Configurando variable DOCKER_HOST..."
+PODMAN_SOCKET="unix:///run/user/$UID/podman/podman.sock"
+
+# Agregar DOCKER_HOST al bashrc si no existe
+if ! grep -q "export DOCKER_HOST.*podman.sock" "$HOME/.bashrc" 2>/dev/null; then
+    echo "" >> "$HOME/.bashrc"
+    echo "# Podman socket para compatibilidad con Docker" >> "$HOME/.bashrc"
+    echo "export DOCKER_HOST=unix:///run/user/\$UID/podman/podman.sock" >> "$HOME/.bashrc"
+    echo "[+] Variable DOCKER_HOST agregada a ~/.bashrc"
+fi
+
+# Exportar para la sesión actual
+export DOCKER_HOST="$PODMAN_SOCKET"
+echo "[+] DOCKER_HOST configurado: $DOCKER_HOST"
+
+# Verificar que el socket esté activo
+if [ -S "/run/user/$UID/podman/podman.sock" ]; then
+    echo "[+] Socket de Podman activo y funcionando"
+else
+    echo "[!] Advertencia: El socket no está disponible aún. Puede tardar unos segundos."
+fi
+
+# Crear directorio de instalación si no existe
+mkdir -p "$INSTALL_DIR"
+
+# Descargar lazypodman
+echo "[+] Descargando lazypodman..."
+cd "$TMP_DIR"
+
+# Obtener la última versión de lazydocker
+LAZYDOCKER_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | grep tag_name | cut -d '"' -f 4)
+echo "[+] Versión detectada: $LAZYDOCKER_VERSION"
+
+# Descargar con la URL correcta
+curl -sL "https://github.com/jesseduffield/lazydocker/releases/download/${LAZYDOCKER_VERSION}/lazydocker_${LAZYDOCKER_VERSION#v}_Linux_x86_64.tar.gz" -o lazypodman.tar.gz
+
+# Descomprimir
+tar xf lazypodman.tar.gz lazydocker
+
+# Renombrar y mover
+mv lazydocker "$INSTALL_DIR/lazypodman"
+chmod +x "$INSTALL_DIR/lazypodman"
+
+# Verificar instalación
+if [ -x "$INSTALL_DIR/lazypodman" ]; then
+    echo "[+] lazypodman instalado correctamente en $INSTALL_DIR"
+else
+    echo "[!] Error al instalar lazypodman"
+    exit 1
+fi
+
+# Limpiar temporales
+rm -rf "$TMP_DIR"
+
+echo ""
+echo "=== Configuración completada ==="
+echo "Socket de Podman: $PODMAN_SOCKET"
+echo "Para usar lazypodman, ejecutá: lazypodman"
+echo ""
+echo "NOTA: Reiniciá tu terminal o ejecutá 'source ~/.bashrc' para cargar DOCKER_HOST"

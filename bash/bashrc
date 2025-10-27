@@ -216,3 +216,6 @@ if command -v gh >/dev/null 2>&1; then
   eval "$(gh completion -s bash)"
   complete -F __start_gh ghp ghw 2>/dev/null
 fi
+
+# Podman socket para compatibilidad con Docker
+export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock
