@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+echo "[+] Actualizando sistema..."
+sudo apt update
+
+echo "[+] Instalando podman-compose desde repositorios oficiales de Debian..."
+sudo apt install -y podman-compose
+
+echo "[+] Verificando instalación..."
+if command -v podman-compose &> /dev/null; then
+    echo "[+] podman-compose instalado correctamente."
+    podman-compose --version
+    echo ""
+    echo "Para probar la instalación ejecutá:"
+    echo "  podman-compose --version"
+else
+    echo "[-] Error: podman-compose no se encuentra en el PATH."
+fi
+
+echo ""
+echo "NOTA: Debian 12 incluye podman-compose en sus repositorios oficiales."
